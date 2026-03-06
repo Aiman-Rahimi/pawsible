@@ -1,0 +1,157 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MODERATOR
+  ADOPTER
+}
+
+enum PetStatus {
+  AVAILABLE
+  PENDING
+  ADOPTED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ActivityType {
+  PROFILE_COMPLETE
+  FIRST_REQUEST
+  REQUEST_APPROVED
+  DAILY_VISIT
+  PET_FAVORITED
+  REVIEW_LEFT
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  role          Role      @default(ADOPTER)
+  points        Int       @default(0)
+  avatarUrl     String?   @map("avatar_url")
+  bio           String?
+  phone         String?
+  address       String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  adoptionRequests AdoptionRequest[]
+  activityLogs     ActivityLog[]
+  petPreferences   PetPreference?
+  favorites        Favorite[]
+  shelterPets      Pet[]             @relation("ShelterStaff")
+
+  @@map("users")
+}
+
+model Pet {
+  id          String    @id @default(cuid())
+  name        String
+  breed       String
+  species     String    @default("Dog")
+  age         Float
+  weight      Float?
+  gender      String    @default("Unknown")
+  color       String?
+  photoUrl    String?   @map("photo_url")
+  photos      String[]
+  status      PetStatus @default(AVAILABLE)
+  description String?
+  traits      String[]
+  vaccinated  Boolean   @default(false)
+  neutered    Boolean   @default(false)
+  houseTrained Boolean  @default(false) @map("house_trained")
+  goodWithKids Boolean  @default(false) @map("good_with_kids")
+  goodWithPets Boolean  @default(false) @map("good_with_pets")
+  shelterId   String    @map("shelter_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  shelter          User              @relation("ShelterStaff", fields: [shelterId], references: [id])
+  adoptionRequests AdoptionRequest[]
+  favorites        Favorite[]
+
+  @@map("pets")
+}
+
+model AdoptionRequest {
+  id          String        @id @default(cuid())
+  userId      String        @map("user_id")
+  petId       String        @map("pet_id")
+  status      RequestStatus @default(PENDING)
+  message     String?
+  experience  String?
+  homeType    String?       @map("home_type")
+  hasYard     Boolean?      @map("has_yard")
+  reviewNote  String?       @map("review_note")
+  requestDate DateTime      @default(now()) @map("request_date")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, petId])
+  @@map("adoption_requests")
+}
+
+model PetPreference {
+  id         String   @id @default(cuid())
+  userId     String   @unique @map("user_id")
+  species    String[]
+  sizeMin    Float?   @map("size_min")
+  sizeMax    Float?   @map("size_max")
+  ageMin     Float?   @map("age_min")
+  ageMax     Float?   @map("age_max")
+  traits     String[]
+  goodWithKids Boolean? @map("good_with_kids")
+  goodWithPets Boolean? @map("good_with_pets")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("pet_preferences")
+}
+
+model ActivityLog {
+  id         String       @id @default(cuid())
+  userId     String       @map("user_id")
+  type       ActivityType
+  points     Int
+  description String
+  metadata   Json?
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  petId     String   @map("pet_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, petId])
+  @@map("favorites")
+}

@@ -1,186 +1,158 @@
 # 🐾 Pawsible — Pet Adoption Platform
 
-A fullstack pet adoption platform built with **Next.js 14 + TypeScript + PostgreSQL + Prisma**.
+A full-stack pet adoption web application built with Next.js 14, TypeScript, PostgreSQL, and Prisma. Built as a portfolio project to demonstrate full-stack development skills.
 
-## Tech Stack
-
-| Layer       | Technology                        |
-|-------------|-----------------------------------|
-| Frontend    | Next.js 14 (App Router), React 18 |
-| Language    | TypeScript                        |
-| Styling     | Tailwind CSS                      |
-| Database    | PostgreSQL                        |
-| ORM         | Prisma                            |
-| Auth        | NextAuth.js (Credentials)         |
-| File Upload | Cloudinary                        |
-| Charts      | Recharts                          |
-| Icons       | Lucide React                      |
+![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat-square&logo=prisma)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38BDF8?style=flat-square&logo=tailwindcss)
 
 ---
 
-## Project Structure
+## ✨ Features (Current)
 
+- 🔐 **Authentication** — Role-based auth with NextAuth.js (Admin, Moderator, Adopter)
+- 🐶 **Pet Listings** — Browse, search, and filter pets by species, age, gender, and traits
+- 📋 **Adoption Requests** — Submit and track adoption applications with status updates
+- 📊 **Admin Dashboard** — Analytics, charts (Recharts), and request management
+- 🏆 **Leaderboard & Points** — Gamification system to reward active users
+- 📸 **Photo Upload** — Cloudinary integration for pet photo uploads
+- 👤 **User Profiles** — Personal profile with adoption history
+
+---
+
+## 🚀 Planned Features
+
+> This project is actively being developed. The following features are coming soon:
+
+- [ ] 🔔 **Real-time Notifications** — Get notified when your adoption request is approved/rejected
+- [ ] 🤖 **AI Pet Matching** — Answer a few questions and get matched with your perfect pet
+- [ ] 💬 **Comments & Reviews** — Leave reviews after adopting a pet
+- [ ] ❤️ **Favorites** — Save and revisit pets you love
+- [ ] 🌙 **Dark Mode** — Toggle between light and dark theme
+- [ ] 📧 **Email Notifications** — Email updates on request status changes
+- [ ] 🗺️ **Shelter Map** — View shelter locations on a map
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Language | TypeScript |
+| Database | PostgreSQL |
+| ORM | Prisma |
+| Auth | NextAuth.js |
+| Styling | Tailwind CSS + Inline Styles |
+| Charts | Recharts |
+| Image Upload | Cloudinary |
+| Fonts | Fraunces + Cabinet Grotesk |
+
+---
+
+## 📦 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL database
+- Cloudinary account (free)
+
+### Installation
+
+1. **Clone the repo**
+```bash
+   git clone https://github.com/YOUR_USERNAME/pawsible.git
+   cd pawsible
+```
+
+2. **Install dependencies**
+```bash
+   npm install
+```
+
+3. **Set up environment variables**
+
+   Create a `.env` file in the root directory:
+```env
+   # Database
+   DATABASE_URL="postgresql://user:password@localhost:5432/pawsible"
+
+   # NextAuth
+   NEXTAUTH_SECRET="your-secret-here"
+   NEXTAUTH_URL="http://localhost:3000"
+
+   # Cloudinary
+   CLOUDINARY_CLOUD_NAME="your-cloud-name"
+   CLOUDINARY_API_KEY="your-api-key"
+   CLOUDINARY_API_SECRET="your-api-secret"
+   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
+```
+
+4. **Set up the database**
+```bash
+   npx prisma migrate dev
+   npx prisma db seed
+```
+
+5. **Run the development server**
+```bash
+   npm run dev
+```
+
+6. Open [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 👤 Demo Accounts
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@pawsible.com | admin123 |
+| Moderator | mod@pawsible.com | admin123 |
+| User | rahimi@gmail.com | 12345678 |
+
+---
+
+## 📁 Project Structure
 ```
 pawsible/
 ├── app/
-│   ├── api/
-│   │   ├── auth/          # NextAuth + register
-│   │   ├── pets/          # Pet CRUD + [id]
-│   │   ├── adoption/      # Requests + [id] review
-│   │   ├── dashboard/     # Admin analytics
-│   │   ├── leaderboard/   # Points leaderboard
-│   │   └── upload/        # Cloudinary upload
-│   ├── auth/login/        # Login page
-│   ├── auth/register/     # Register page
-│   ├── pets/              # Pets list, detail, new, edit
-│   ├── adoption/          # Admin requests + my requests
-│   ├── dashboard/         # Admin dashboard
-│   ├── leaderboard/       # Points leaderboard
-│   └── profile/           # User profile
-├── components/
-│   ├── Navbar.tsx
-│   ├── PetCard.tsx
-│   ├── PetForm.tsx
-│   ├── AdoptionRequestCard.tsx
-│   ├── ChartDashboard.tsx
-│   └── Providers.tsx
-├── lib/
-│   ├── prisma.ts          # Prisma client singleton
-│   ├── auth.ts            # NextAuth config
-│   ├── points.ts          # Gamification utils
-│   └── api.ts             # API helpers
-├── prisma/
-│   ├── schema.prisma      # Full schema
-│   └── seed.ts            # Demo data
-└── types/index.ts         # Shared TypeScript types
+│   ├── api/          # API routes
+│   ├── auth/         # Login & Register pages
+│   ├── pets/         # Pet listing & detail pages
+│   ├── adoption/     # Adoption request pages
+│   ├── dashboard/    # Admin dashboard
+│   ├── leaderboard/  # Points leaderboard
+│   └── profile/      # User profile
+├── components/       # Reusable components
+├── lib/              # Utilities & helpers
+├── prisma/           # Database schema & seed
+└── types/            # TypeScript types
 ```
 
 ---
 
-## Quick Start
+## 🔐 Role Permissions
 
-### 1. Install dependencies
-```bash
-npm install
-```
-
-### 2. Setup environment
-```bash
-cp .env.example .env
-# Edit .env with your DATABASE_URL, NEXTAUTH_SECRET, and Cloudinary keys
-```
-
-### 3. Setup database
-```bash
-# Push schema to DB
-npm run db:push
-
-# Seed with demo data
-npm run db:seed
-```
-
-### 4. Run development server
-```bash
-npm run dev
-# Open http://localhost:3000
-```
+| Feature | Admin | Moderator | User |
+|---|---|---|---|
+| Browse Pets | ✅ | ✅ | ✅ |
+| Add Pet | ✅ | ✅ | ❌ |
+| Edit Pet | ✅ | ✅ | ❌ |
+| Delete Pet | ✅ | ❌ | ❌ |
+| Submit Adoption Request | ❌ | ❌ | ✅ |
+| Approve/Reject Requests | ✅ | ✅ | ❌ |
+| View Dashboard | ✅ | ✅ | ❌ |
 
 ---
 
-## Demo Accounts
+## 📄 License
 
-| Role      | Email                    | Password   |
-|-----------|--------------------------|------------|
-| Admin     | admin@pawsible.com       | admin123   |
-| Moderator | mod@pawsible.com         | admin123   |
-| Adopter   | alice@example.com        | user123    |
+This project is open source.
 
 ---
 
-## Features
-
-### Roles
-- **Admin/Shelter Staff** — Full CRUD for pets, approve/reject adoption requests, analytics dashboard
-- **Moderator** — Add/edit pets, review requests  
-- **Adopter** — Browse pets, submit requests, track status
-
-### Pages
-| Route               | Description                            | Access       |
-|---------------------|----------------------------------------|--------------|
-| `/`                 | Landing page                           | Public       |
-| `/pets`             | Pet listing with search & filters      | Public       |
-| `/pets/[id]`        | Pet detail + adoption form             | Auth to adopt|
-| `/pets/new`         | Add new pet                            | Admin/Mod    |
-| `/pets/[id]/edit`   | Edit pet                               | Admin/Mod    |
-| `/adoption`         | All adoption requests                  | Admin/Mod    |
-| `/adoption/mine`    | My adoption requests                   | Authenticated|
-| `/dashboard`        | Admin analytics dashboard              | Admin/Mod    |
-| `/leaderboard`      | Points leaderboard                     | Public       |
-| `/profile`          | User profile + activity                | Authenticated|
-| `/auth/login`       | Sign in                                | Public       |
-| `/auth/register`    | Create account                         | Public       |
-
-### Gamification Points
-| Action              | Points |
-|---------------------|--------|
-| Profile complete    | +50    |
-| First request       | +100   |
-| Request approved    | +200   |
-| Daily visit         | +5     |
-| Pet favorited       | +10    |
-| Review left         | +25    |
-
----
-
-## Database Schema
-
-```
-users              — id, name, email, password_hash, role, points
-pets               — id, name, breed, species, age, photo_url, status, shelter_id
-adoption_requests  — id, user_id, pet_id, status, message, request_date
-pet_preferences    — id, user_id, species[], age_min/max, traits[]
-activity_logs      — id, user_id, type, points, description
-favorites          — id, user_id, pet_id
-```
-
----
-
-## API Routes
-
-| Method | Route                  | Description               | Auth         |
-|--------|------------------------|---------------------------|--------------|
-| GET    | /api/pets              | List pets (filterable)    | Public       |
-| POST   | /api/pets              | Create pet                | Admin/Mod    |
-| GET    | /api/pets/[id]         | Get pet detail            | Public       |
-| PATCH  | /api/pets/[id]         | Update pet                | Admin/Mod    |
-| DELETE | /api/pets/[id]         | Delete pet                | Admin        |
-| GET    | /api/adoption          | List requests             | Authenticated|
-| POST   | /api/adoption          | Submit request            | Authenticated|
-| GET    | /api/adoption/[id]     | Get request               | Authenticated|
-| PATCH  | /api/adoption/[id]     | Approve/reject request    | Admin/Mod    |
-| DELETE | /api/adoption/[id]     | Cancel request            | Owner/Admin  |
-| GET    | /api/dashboard         | Analytics data            | Admin/Mod    |
-| GET    | /api/leaderboard       | Top users by points       | Public       |
-| POST   | /api/upload            | Upload pet image          | Admin/Mod    |
-| POST   | /api/auth/register     | Register user             | Public       |
-
----
-
-## Deployment
-
-### Vercel + Railway (recommended)
-1. Push to GitHub
-2. Connect repo to Vercel
-3. Create PostgreSQL DB on Railway or Supabase
-4. Set environment variables in Vercel dashboard
-5. Run `prisma migrate deploy` on first deploy
-
-### Environment Variables
-```
-DATABASE_URL=postgresql://...
-NEXTAUTH_URL=https://your-domain.com
-NEXTAUTH_SECRET=your-secret-32-chars
-CLOUDINARY_CLOUD_NAME=...
-CLOUDINARY_API_KEY=...
-CLOUDINARY_API_SECRET=...
-```
+Built with ❤️ as Rahimi's portfolio project.

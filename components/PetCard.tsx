@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { Heart } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { Pet } from "@/types";
 
 const PET_EMOJI: Record<string, string> = { Dog:"🐶", Cat:"🐱", Rabbit:"🐰", Bird:"🐦", Hamster:"🐹" };
@@ -16,15 +18,28 @@ function hashBg(id: string) {
   let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % PET_BGS.length;
   return PET_BGS[h];
 }
-
 const STATUS: Record<string, { label: string; bg: string; color: string; border: string }> = {
   AVAILABLE: { label: "Available", bg: "rgba(74,222,128,0.18)", color: "#15803d", border: "rgba(74,222,128,0.3)" },
   PENDING:   { label: "Pending",   bg: "rgba(251,191,36,0.18)", color: "#92400e", border: "rgba(251,191,36,0.3)" },
   ADOPTED:   { label: "Adopted",   bg: "rgba(0,0,0,0.06)",     color: "#6b6560", border: "rgba(0,0,0,0.1)"      },
 };
 
-export function PetCard({ pet }: { pet: Pet }) {
+export function PetCard({ pet, isFavorited: initFav = false }: { pet: Pet; isFavorited?: boolean }) {
+  const { data: session } = useSession();
+  const [favorited, setFavorited] = useState(initFav);
+  const [loading,   setLoading]   = useState(false);
   const s = STATUS[pet.status] ?? STATUS.AVAILABLE;
+
+  async function toggleFav(e: React.MouseEvent) {
+    e.preventDefault();
+    if (!session) return;
+    setLoading(true);
+    const method = favorited ? "DELETE" : "POST";
+    await fetch(`/api/favorites/${pet.id}`, { method });
+    setFavorited(!favorited);
+    setLoading(false);
+  }
+
   return (
     <Link href={`/pets/${pet.id}`} style={{ textDecoration: "none", display: "block" }}>
       <div style={{
@@ -34,7 +49,6 @@ export function PetCard({ pet }: { pet: Pet }) {
       }}
         onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(0,0,0,0.12)"; }}
         onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-
         {/* Image */}
         <div style={{
           height: 210, position: "relative", background: hashBg(pet.id),
@@ -50,18 +64,20 @@ export function PetCard({ pet }: { pet: Pet }) {
               padding: "4px 10px", borderRadius: "100px", background: s.bg, color: s.color, border: `1px solid ${s.border}` }}>
               {s.label}
             </span>
-            <button onClick={e => e.preventDefault()} style={{
-              width: 32, height: 32, background: "rgba(255,255,255,0.9)", borderRadius: "50%",
-              border: "none", display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", transition: "transform 0.2s",
-            }}
-              onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.15)")}
-              onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}>
-              <Heart style={{ width: 14, height: 14, color: "#f87171" }} />
-            </button>
+            {session && (
+              <button onClick={toggleFav} disabled={loading} style={{
+                width: 32, height: 32, background: "rgba(255,255,255,0.9)", borderRadius: "50%",
+                border: "none", display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", transition: "transform 0.2s",
+                opacity: loading ? 0.6 : 1,
+              }}
+                onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.15)")}
+                onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}>
+                <Heart style={{ width: 14, height: 14, color: favorited ? "#ef4444" : "#9ca3af" }} fill={favorited ? "#ef4444" : "none"} />
+              </button>
+            )}
           </div>
         </div>
-
         {/* Body */}
         <div style={{ padding: "18px 20px 20px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
@@ -88,10 +104,7 @@ export function PetCard({ pet }: { pet: Pet }) {
               {pet.goodWithPets && <span>🐾 Pets</span>}
               {pet.vaccinated   && <span>💉</span>}
             </div>
-            <span style={{
-              fontSize: "0.68rem", fontWeight: 700, padding: "6px 14px", borderRadius: "100px",
-              background: "var(--ink)", color: "var(--paper)", fontFamily: "var(--font-body)",
-            }}>
+            <span style={{ fontSize: "0.68rem", fontWeight: 700, padding: "6px 14px", borderRadius: "100px", background: "var(--ink)", color: "var(--paper)", fontFamily: "var(--font-body)" }}>
               Adopt →
             </span>
           </div>

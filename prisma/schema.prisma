@@ -55,7 +55,9 @@ model User {
   activityLogs     ActivityLog[]
   petPreferences   PetPreference?
   favorites        Favorite[]
+  reviews          Review[]
   shelterPets      Pet[]             @relation("ShelterStaff")
+  notifications    Notification[]
 
   @@map("users")
 }
@@ -86,6 +88,7 @@ model Pet {
   shelter          User              @relation("ShelterStaff", fields: [shelterId], references: [id])
   adoptionRequests AdoptionRequest[]
   favorites        Favorite[]
+  reviews          Review[]
 
   @@map("pets")
 }
@@ -154,4 +157,34 @@ model Favorite {
 
   @@unique([userId, petId])
   @@map("favorites")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  title     String
+  message   String
+  type      String   @default("INFO")
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  petId     String   @map("pet_id")
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, petId])
+  @@map("reviews")
 }

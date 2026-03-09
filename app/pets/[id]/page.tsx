@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Edit, Trash2, Heart, Check, MapPin, Scale, Calendar } from "lucide-react";
 import { Pet } from "@/types";
+import { PetReviews } from "@/components/PetReviews";
 
 const PET_EMOJI: Record<string, string> = { Dog:"🐶", Cat:"🐱", Rabbit:"🐰", Bird:"🐦", Hamster:"🐹" };
 const STATUS_CFG: Record<string, { label: string; bg: string; color: string }> = {
@@ -15,19 +16,21 @@ const STATUS_CFG: Record<string, { label: string; bg: string; color: string }> =
 };
 
 export default function PetDetailPage() {
-  const { id }         = useParams<{ id: string }>();
+  const { id }            = useParams<{ id: string }>();
   const { data: session } = useSession();
-  const router         = useRouter();
-  const user           = session?.user as any;
-  const isAdmin        = user?.role === "ADMIN" || user?.role === "MODERATOR";
+  const router            = useRouter();
+  const user              = session?.user as any;
+  const isAdmin           = user?.role === "ADMIN" || user?.role === "MODERATOR";
 
-  const [pet,         setPet]         = useState<Pet | null>(null);
-  const [loading,     setLoading]     = useState(true);
-  const [requested,   setRequested]   = useState(false);
-  const [showForm,    setShowForm]    = useState(false);
-  const [requesting,  setRequesting]  = useState(false);
-  const [deleting,    setDeleting]    = useState(false);
-  const [selectedImg, setSelectedImg] = useState(0);
+  const [pet,        setPet]        = useState<Pet | null>(null);
+  const [loading,    setLoading]    = useState(true);
+  const [requested,  setRequested]  = useState(false);
+  const [showForm,   setShowForm]   = useState(false);
+  const [requesting, setRequesting] = useState(false);
+  const [deleting,   setDeleting]   = useState(false);
+  const [selectedImg,setSelectedImg]= useState(0);
+  const [favorited,  setFavorited]  = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
   const [reqForm, setReqForm] = useState({ message: "", experience: "", homeType: "Apartment", hasYard: false });
 
   useEffect(() => {
@@ -53,14 +56,23 @@ export default function PetDetailPage() {
     router.push("/pets"); router.refresh();
   }
 
-  const label = { display: "block" as const, fontSize: "0.72rem", fontWeight: 700, marginBottom: 6, textTransform: "uppercase" as const, letterSpacing: "0.06em", fontFamily: "var(--font-body)", color: "var(--ink)" };
+  async function toggleFav() {
+    if (!session) return;
+    setFavLoading(true);
+    const method = favorited ? "DELETE" : "POST";
+    await fetch(`/api/favorites/${id}`, { method });
+    setFavorited(!favorited);
+    setFavLoading(false);
+  }
+
+  const label: React.CSSProperties = { display: "block", fontSize: "0.72rem", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "var(--font-body)", color: "var(--ink)" };
 
   if (loading) return (
     <div style={{ maxWidth: 960, margin: "0 auto", padding: "3rem 2rem" }}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", marginTop: "2rem" }}>
         <div style={{ height: 380, background: "var(--cream)", borderRadius: 20 }} className="pulse-bg" />
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {[200, 140, 80, 180].map(w => <div key={w} style={{ height: 16, background: "var(--cream)", borderRadius: 8, width: w }} className="pulse-bg" />)}
+          {[200,140,80,180].map(w => <div key={w} style={{ height: 16, background: "var(--cream)", borderRadius: 8, width: w }} className="pulse-bg" />)}
         </div>
       </div>
     </div>
@@ -80,11 +92,7 @@ export default function PetDetailPage() {
 
   return (
     <div style={{ maxWidth: 960, margin: "0 auto", padding: "2.5rem 2rem 5rem" }}>
-      <Link href="/pets" style={{
-        display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.82rem",
-        color: "var(--muted)", textDecoration: "none", marginBottom: "2rem",
-        fontFamily: "var(--font-body)", fontWeight: 600, transition: "color 0.15s",
-      }}
+      <Link href="/pets" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.82rem", color: "var(--muted)", textDecoration: "none", marginBottom: "2rem", fontFamily: "var(--font-body)", fontWeight: 600 }}
         onMouseEnter={e => (e.currentTarget.style.color = "var(--ink)")}
         onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}>
         <ArrowLeft style={{ width: 15, height: 15 }} /> Back to pets
@@ -93,32 +101,23 @@ export default function PetDetailPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem" }}>
         {/* Photos */}
         <div>
-          <div style={{
-            height: 380, borderRadius: 20, overflow: "hidden", position: "relative",
-            background: "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8rem",
-          }}>
-            {allPhotos.length > 0 ? (
-              <Image src={allPhotos[selectedImg]} alt={pet.name} fill style={{ objectFit: "cover" }} sizes="480px" />
-            ) : (
-              <span>{PET_EMOJI[pet.species] ?? "🐾"}</span>
-            )}
-            <span style={{
-              position: "absolute", top: 14, left: 14, fontSize: "0.6rem", fontWeight: 700,
-              letterSpacing: "0.08em", textTransform: "uppercase",
-              padding: "5px 12px", borderRadius: "100px", background: sc.bg, color: sc.color,
-              fontFamily: "var(--font-body)",
-            }}>
+          <div style={{ height: 380, borderRadius: 20, overflow: "hidden", position: "relative", background: "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8rem" }}>
+            {allPhotos.length > 0
+              ? <Image src={allPhotos[selectedImg]} alt={pet.name} fill style={{ objectFit: "cover" }} sizes="480px" />
+              : <span>{PET_EMOJI[pet.species] ?? "🐾"}</span>}
+            <span style={{ position: "absolute", top: 14, left: 14, fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "5px 12px", borderRadius: "100px", background: sc.bg, color: sc.color, fontFamily: "var(--font-body)" }}>
               {sc.label}
             </span>
+            {session && (
+              <button onClick={toggleFav} disabled={favLoading} style={{ position: "absolute", top: 12, right: 12, width: 36, height: 36, background: "rgba(255,255,255,0.9)", borderRadius: "50%", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+                <Heart style={{ width: 16, height: 16, color: favorited ? "#ef4444" : "#9ca3af" }} fill={favorited ? "#ef4444" : "none"} />
+              </button>
+            )}
           </div>
           {allPhotos.length > 1 && (
             <div style={{ display: "flex", gap: 8, marginTop: 10, overflowX: "auto" }}>
               {allPhotos.map((url, i) => (
-                <button key={i} onClick={() => setSelectedImg(i)} style={{
-                  flexShrink: 0, width: 64, height: 64, borderRadius: 12, overflow: "hidden",
-                  position: "relative", border: `2px solid ${i === selectedImg ? "var(--accent)" : "transparent"}`,
-                  cursor: "pointer", background: "none", padding: 0, transition: "border-color 0.15s",
-                }}>
+                <button key={i} onClick={() => setSelectedImg(i)} style={{ flexShrink: 0, width: 64, height: 64, borderRadius: 12, overflow: "hidden", position: "relative", border: `2px solid ${i === selectedImg ? "var(--accent)" : "transparent"}`, cursor: "pointer", background: "none", padding: 0 }}>
                   <Image src={url} alt="" width={64} height={64} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
                 </button>
               ))}
@@ -129,34 +128,23 @@ export default function PetDetailPage() {
         {/* Details */}
         <div>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
-            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "2.2rem", fontWeight: 900, letterSpacing: "-0.04em", color: "var(--ink)" }}>
-              {pet.name}
-            </h1>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "2.2rem", fontWeight: 900, letterSpacing: "-0.04em", color: "var(--ink)" }}>{pet.name}</h1>
             {isAdmin && (
               <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                <Link href={`/pets/${id}/edit`} style={{
-                  padding: 8, borderRadius: 10, background: "var(--cream)", textDecoration: "none",
-                  display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s",
-                }}
+                <Link href={`/pets/${id}/edit`} style={{ padding: 8, borderRadius: 10, background: "var(--cream)", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "#e5e7eb")}
                   onMouseLeave={e => (e.currentTarget.style.background = "var(--cream)")}>
                   <Edit style={{ width: 15, height: 15, color: "var(--muted)" }} />
                 </Link>
-                <button onClick={handleDelete} disabled={deleting} style={{
-                  padding: 8, borderRadius: 10, background: "#fef2f2", border: "none",
-                  display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                }}>
+                <button onClick={handleDelete} disabled={deleting} style={{ padding: 8, borderRadius: 10, background: "#fef2f2", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Trash2 style={{ width: 15, height: 15, color: "#dc2626" }} />
                 </button>
               </div>
             )}
           </div>
 
-          <p style={{ fontSize: "0.88rem", color: "var(--muted)", marginBottom: "1.5rem", fontFamily: "var(--font-body)" }}>
-            {pet.breed} &bull; {pet.species}
-          </p>
+          <p style={{ fontSize: "0.88rem", color: "var(--muted)", marginBottom: "1.5rem", fontFamily: "var(--font-body)" }}>{pet.breed} &bull; {pet.species}</p>
 
-          {/* Stats */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: "1.5rem" }}>
             {[
               { emoji: "📅", label: "Age",    value: pet.age < 1 ? "< 1 yr" : `${pet.age} yr${pet.age !== 1 ? "s" : ""}` },
@@ -171,22 +159,12 @@ export default function PetDetailPage() {
             ))}
           </div>
 
-          {pet.description && (
-            <p style={{ fontSize: "0.88rem", color: "var(--muted)", lineHeight: 1.75, marginBottom: "1.25rem", fontFamily: "var(--font-body)" }}>
-              {pet.description}
-            </p>
-          )}
+          {pet.description && <p style={{ fontSize: "0.88rem", color: "var(--muted)", lineHeight: 1.75, marginBottom: "1.25rem", fontFamily: "var(--font-body)" }}>{pet.description}</p>}
 
-          {/* Traits */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: "1.25rem" }}>
-            {pet.traits.map(t => (
-              <span key={t} style={{ fontSize: "0.68rem", fontWeight: 600, padding: "4px 11px", borderRadius: "100px", background: "var(--cream)", color: "var(--muted)", fontFamily: "var(--font-body)" }}>
-                {t}
-              </span>
-            ))}
+            {pet.traits.map(t => <span key={t} style={{ fontSize: "0.68rem", fontWeight: 600, padding: "4px 11px", borderRadius: "100px", background: "var(--cream)", color: "var(--muted)", fontFamily: "var(--font-body)" }}>{t}</span>)}
           </div>
 
-          {/* Health */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: "1.5rem" }}>
             {[
               { label: "Vaccinated",     val: pet.vaccinated   },
@@ -196,18 +174,10 @@ export default function PetDetailPage() {
               { label: "Good with pets", val: pet.goodWithPets },
             ].map(c => (
               <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{
-                  width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-                  background: c.val ? "rgba(74,222,128,0.2)" : "var(--cream)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  {c.val
-                    ? <Check style={{ width: 11, height: 11, color: "#15803d" }} />
-                    : <span style={{ fontSize: "0.6rem", color: "var(--muted)" }}>✕</span>}
+                <div style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, background: c.val ? "rgba(74,222,128,0.2)" : "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {c.val ? <Check style={{ width: 11, height: 11, color: "#15803d" }} /> : <span style={{ fontSize: "0.6rem", color: "var(--muted)" }}>✕</span>}
                 </div>
-                <span style={{ fontSize: "0.8rem", fontFamily: "var(--font-body)", color: c.val ? "var(--ink)" : "var(--muted)" }}>
-                  {c.label}
-                </span>
+                <span style={{ fontSize: "0.8rem", fontFamily: "var(--font-body)", color: c.val ? "var(--ink)" : "var(--muted)" }}>{c.label}</span>
               </div>
             ))}
           </div>
@@ -218,7 +188,6 @@ export default function PetDetailPage() {
             </p>
           )}
 
-          {/* CTA */}
           {!session ? (
             <Link href="/auth/login" className="btn-ink" style={{ width: "100%" }}>Sign in to Adopt</Link>
           ) : requested ? (
@@ -234,16 +203,14 @@ export default function PetDetailPage() {
             </button>
           ) : canAdopt && showForm ? (
             <form onSubmit={handleAdopt} style={{ background: "var(--cream)", borderRadius: 16, padding: "1.5rem", border: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1rem", letterSpacing: "-0.02em" }}>Your Adoption Request</h3>
+              <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1rem" }}>Your Adoption Request</h3>
               <div>
                 <label style={label}>Message</label>
-                <textarea rows={3} className="field" style={{ resize: "none" }} placeholder="Tell us why you'd be a great match..."
-                  value={reqForm.message} onChange={e => setReqForm(f => ({ ...f, message: e.target.value }))} />
+                <textarea rows={3} className="field" style={{ resize: "none" }} placeholder="Tell us why you'd be a great match..." value={reqForm.message} onChange={e => setReqForm(f => ({ ...f, message: e.target.value }))} />
               </div>
               <div>
                 <label style={label}>Pet Experience</label>
-                <input type="text" className="field" placeholder="e.g. Owned dogs for 5 years"
-                  value={reqForm.experience} onChange={e => setReqForm(f => ({ ...f, experience: e.target.value }))} />
+                <input type="text" className="field" placeholder="e.g. Owned dogs for 5 years" value={reqForm.experience} onChange={e => setReqForm(f => ({ ...f, experience: e.target.value }))} />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 <div>
@@ -269,6 +236,9 @@ export default function PetDetailPage() {
           ) : null}
         </div>
       </div>
+
+      {/* Reviews section */}
+      <PetReviews petId={id} />
     </div>
   );
 }

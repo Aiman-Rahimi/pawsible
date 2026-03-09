@@ -21,6 +21,7 @@ export default function HomePage() {
           <div className="anim-fade-up anim-d3" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <Link href="/pets"          className="btn-ink">Browse Pets ↓</Link>
             <Link href="/auth/register" className="btn-outline">Join Free</Link>
+            <Link href="/match" className="btn-ghost">🤖 Find My Match</Link>
           </div>
           <div className="anim-fade-up anim-d4" style={{ display: "flex", gap: "2.5rem", marginTop: "3.5rem", paddingTop: "2.5rem", borderTop: "1px solid var(--border)" }}>
             {[{ n: "2,400+", l: "Pets Adopted" }, { n: "180+", l: "Available Now" }, { n: "98%", l: "Happy Owners" }].map(s => (

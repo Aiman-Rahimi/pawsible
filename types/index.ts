@@ -136,3 +136,32 @@ export interface PetFilters {
   page?: number;
   limit?: number;
 }
+
+export interface Notification {
+  id:        string;
+  userId:    string;
+  title:     string;
+  message:   string;
+  type:      string;
+  read:      boolean;
+  link?:     string | null;
+  createdAt: string;
+}
+
+export interface Review {
+  id:        string;
+  userId:    string;
+  petId:     string;
+  rating:    number;
+  comment?:  string | null;
+  createdAt: string;
+  user?:     Pick<User, "id" | "name" | "avatarUrl">;
+}
+
+export interface Favorite {
+  id:        string;
+  userId:    string;
+  petId:     string;
+  createdAt: string;
+  pet?:      Pet;
+}

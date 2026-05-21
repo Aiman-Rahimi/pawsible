@@ -3,6 +3,8 @@ import { NextRequest } from "next/server";
 import { ok, err } from "@/lib/api";
 import { getLeaderboard } from "@/lib/points";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     const url   = new URL(req.url);

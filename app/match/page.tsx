@@ -1,58 +1,65 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { ArrowLeft, ArrowRight, Home, Leaf, PawPrint, RotateCcw, Search, ShieldCheck, Sparkles, Trophy, Users, Zap } from "lucide-react";
 import { Pet } from "@/types";
+import { PetCard } from "@/components/PetCard";
 
 type Step = 0 | 1 | 2 | 3 | 4 | 5;
 
 const QUESTIONS = [
   {
     key: "home",
-    q: "What type of home do you live in?",
-    emoji: "🏠",
+    q: "What kind of home will they settle into?",
+    helper: "This helps us balance energy, size, and environment.",
+    Icon: Home,
     options: [
-      { label: "Apartment",       value: "apartment", emoji: "🏢" },
-      { label: "House with yard", value: "house",     emoji: "🏡" },
-      { label: "Farm / Rural",    value: "farm",      emoji: "🌾" },
+      { label: "Apartment", value: "apartment", desc: "Compact, cozy, shared building" },
+      { label: "House with yard", value: "house", desc: "Room to wander and play" },
+      { label: "Farm or rural home", value: "farm", desc: "More space, more outdoor rhythm" },
     ],
   },
   {
     key: "activity",
-    q: "How active is your lifestyle?",
-    emoji: "🏃",
+    q: "What is your everyday pace?",
+    helper: "We will match calmer homes with gentler pets and active homes with playful companions.",
+    Icon: Zap,
     options: [
-      { label: "Couch potato",   value: "low",    emoji: "🛋️" },
-      { label: "Moderate walks", value: "medium", emoji: "🚶" },
-      { label: "Very active",    value: "high",   emoji: "⚡" },
+      { label: "Quiet and cozy", value: "low", desc: "Short walks, soft evenings" },
+      { label: "Balanced", value: "medium", desc: "Regular walks and weekend outings" },
+      { label: "Very active", value: "high", desc: "Runs, hikes, high-energy play" },
     ],
   },
   {
     key: "kids",
-    q: "Do you have young children at home?",
-    emoji: "👶",
+    q: "Are there young children at home?",
+    helper: "Family compatibility matters for everyone in the house.",
+    Icon: Users,
     options: [
-      { label: "Yes, young kids",  value: "yes", emoji: "👨‍👩‍👧" },
-      { label: "Older kids / none", value: "no", emoji: "🧑" },
+      { label: "Yes, young kids", value: "yes", desc: "Prioritize patient, kid-friendly pets" },
+      { label: "Older kids or none", value: "no", desc: "A wider range of personalities can fit" },
     ],
   },
   {
     key: "pets",
-    q: "Do you have other pets?",
-    emoji: "🐾",
+    q: "Will they share the home with other pets?",
+    helper: "We will favor pets with compatible social signals.",
+    Icon: PawPrint,
     options: [
-      { label: "Yes, other pets", value: "yes", emoji: "🐕" },
-      { label: "No other pets",   value: "no",  emoji: "1️⃣" },
+      { label: "Yes, other pets", value: "yes", desc: "Look for good-with-pets profiles" },
+      { label: "No other pets", value: "no", desc: "They can be the center of attention" },
     ],
   },
   {
     key: "experience",
-    q: "What's your pet experience?",
-    emoji: "📚",
+    q: "How much pet experience do you have?",
+    helper: "First-time adopters may benefit from calmer, trained, vaccinated pets.",
+    Icon: ShieldCheck,
     options: [
-      { label: "First time owner", value: "beginner",      emoji: "🌱" },
-      { label: "Some experience",  value: "intermediate",  emoji: "😊" },
-      { label: "Very experienced", value: "experienced",   emoji: "🏆" },
+      { label: "First-time adopter", value: "beginner", desc: "Prioritize easygoing and trained pets" },
+      { label: "Some experience", value: "intermediate", desc: "Comfortable with normal routines" },
+      { label: "Very experienced", value: "experienced", desc: "Open to more complex needs" },
     ],
   },
 ];
@@ -60,10 +67,9 @@ const QUESTIONS = [
 function scoreMatch(pet: Pet, answers: Record<string, string>): number {
   let score = 0;
 
-  // Home type vs species/traits
   if (answers.home === "apartment") {
     if (pet.species === "Cat" || pet.species === "Rabbit" || pet.species === "Bird") score += 30;
-    if (pet.traits.some(t => ["Calm","Quiet","Indoor","Gentle"].includes(t))) score += 20;
+    if (pet.traits.some((t) => ["Calm", "Quiet", "Indoor", "Gentle"].includes(t))) score += 20;
     if (pet.weight && pet.weight < 10) score += 15;
   } else if (answers.home === "house") {
     score += 20;
@@ -73,44 +79,38 @@ function scoreMatch(pet: Pet, answers: Record<string, string>): number {
     if (pet.species === "Dog") score += 20;
   }
 
-  // Activity level
   if (answers.activity === "high") {
     if (pet.species === "Dog") score += 25;
-    if (pet.traits.some(t => ["Energetic","Playful","Active"].includes(t))) score += 20;
+    if (pet.traits.some((t) => ["Energetic", "Playful", "Active"].includes(t))) score += 20;
   } else if (answers.activity === "low") {
     if (pet.species === "Cat" || pet.species === "Rabbit") score += 25;
-    if (pet.traits.some(t => ["Calm","Lazy","Gentle","Quiet"].includes(t))) score += 20;
+    if (pet.traits.some((t) => ["Calm", "Lazy", "Gentle", "Quiet"].includes(t))) score += 20;
   } else {
     score += 15;
   }
 
-  // Kids
   if (answers.kids === "yes" && pet.goodWithKids) score += 25;
-  if (answers.kids === "no")                       score += 10;
-
-  // Other pets
+  if (answers.kids === "no") score += 10;
   if (answers.pets === "yes" && pet.goodWithPets) score += 25;
-  if (answers.pets === "no")                      score += 10;
+  if (answers.pets === "no") score += 10;
 
-  // Experience
   if (answers.experience === "beginner") {
     if (pet.houseTrained) score += 20;
-    if (pet.vaccinated)   score += 10;
-    if (pet.traits.some(t => ["Gentle","Calm","Easy-going"].includes(t))) score += 15;
+    if (pet.vaccinated) score += 10;
+    if (pet.traits.some((t) => ["Gentle", "Calm", "Easy-going"].includes(t))) score += 15;
   } else if (answers.experience === "experienced") {
     score += 15;
   } else {
     score += 10;
   }
 
-  // Bonus: available only
   if (pet.status === "AVAILABLE") score += 10;
 
   return score;
 }
 
 export default function MatchPage() {
-  const [step,    setStep]    = useState<Step>(0);
+  const [step, setStep] = useState<Step>(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [results, setResults] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(false);
@@ -121,155 +121,156 @@ export default function MatchPage() {
 
     if (step < QUESTIONS.length - 1) {
       setStep((step + 1) as Step);
-    } else {
-      // Last question — fetch and score
-      setLoading(true);
-      try {
-        const res  = await fetch("/api/pets?limit=50&status=AVAILABLE");
-        const json = await res.json();
-        const pets: Pet[] = json.data?.pets ?? [];
-        const scored = pets
-          .map(p => ({ pet: p, score: scoreMatch(p, newAnswers) }))
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 6)
-          .map(x => x.pet);
-        setResults(scored);
-        setStep(5);
-      } catch { setStep(5); } finally { setLoading(false); }
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/pets?limit=50&status=AVAILABLE");
+      const json = await res.json();
+      const pets: Pet[] = json.data?.pets ?? [];
+      const scored = pets
+        .map((pet) => ({ pet, score: scoreMatch(pet, newAnswers) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 6)
+        .map((item) => item.pet);
+      setResults(scored);
+      setStep(5);
+    } catch {
+      setStep(5);
+    } finally {
+      setLoading(false);
     }
   }
 
-  function restart() { setStep(0); setAnswers({}); setResults([]); }
+  function restart() {
+    setStep(0);
+    setAnswers({});
+    setResults([]);
+  }
 
-  const PET_EMOJI: Record<string, string> = { Dog:"🐶", Cat:"🐱", Rabbit:"🐰", Bird:"🐦" };
-  const STATUS_BG: Record<string, { bg: string; color: string }> = {
-    AVAILABLE: { bg: "rgba(74,222,128,0.18)", color: "#15803d" },
-    PENDING:   { bg: "rgba(251,191,36,0.18)", color: "#92400e" },
-    ADOPTED:   { bg: "rgba(0,0,0,0.06)",     color: "#6b6560" },
-  };
+  const current = QUESTIONS[step] ?? QUESTIONS[0];
+  const CurrentIcon = current.Icon;
+  const progress = Math.round(((Math.min(step, QUESTIONS.length - 1) + 1) / QUESTIONS.length) * 100);
 
   return (
-    <div style={{ minHeight: "calc(100vh - 64px)", background: "var(--cream)" }}>
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "4rem 2rem 6rem" }}>
-
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-          <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🤖</div>
-          <div className="eyebrow" style={{ justifyContent: "center", marginBottom: "0.75rem" }}>Smart Matching</div>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "2.5rem", fontWeight: 900, letterSpacing: "-0.04em", color: "var(--ink)" }}>
-            Find Your <em style={{ fontStyle: "italic", color: "var(--accent)" }}>Perfect Match</em>
-          </h1>
-          <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginTop: "0.75rem", fontFamily: "var(--font-body)" }}>
-            Answer {QUESTIONS.length} quick questions — we'll match you with your ideal pet.
+    <div className="premium-hero" style={{ minHeight: "calc(100vh - 68px)" }}>
+      <div className="page-shell" style={{ maxWidth: 1080 }}>
+        <div style={{ textAlign: "center", marginBottom: "2.4rem" }}>
+          <div style={{ width: 64, height: 64, borderRadius: 24, background: "var(--ink)", color: "var(--paper)", display: "grid", placeItems: "center", margin: "0 auto 1rem", boxShadow: "var(--shadow-md)" }}>
+            <Sparkles style={{ width: 30, height: 30 }} />
+          </div>
+          <div className="eyebrow" style={{ justifyContent: "center" }}>Smart matching</div>
+          <h1 className="heading-lg" style={{ marginTop: "0.8rem" }}>Let us narrow the search to pets that fit your real life.</h1>
+          <p className="lead" style={{ maxWidth: 680, margin: "0.9rem auto 0" }}>
+            Five thoughtful questions, then a ranked shortlist based on home, pace, family needs, and experience.
           </p>
         </div>
 
-        {/* Quiz */}
-        {step < QUESTIONS.length && (
-          <div style={{ background: "white", borderRadius: 24, padding: "2.5rem", boxShadow: "0 4px 30px rgba(0,0,0,0.07)" }}>
-            {/* Progress */}
-            <div style={{ display: "flex", gap: 6, marginBottom: "2rem" }}>
-              {QUESTIONS.map((_, i) => (
-                <div key={i} style={{
-                  flex: 1, height: 4, borderRadius: 4,
-                  background: i <= step ? "var(--accent)" : "var(--cream)",
-                  transition: "background 0.3s",
-                }} />
-              ))}
-            </div>
+        {step < QUESTIONS.length && !loading && (
+          <div className="glass-panel" style={{ borderRadius: 34, padding: "clamp(1.2rem,4vw,2rem)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: "clamp(1.25rem,4vw,2rem)", alignItems: "stretch" }} className="hero-grid">
+              <aside style={{ borderRadius: 28, background: "var(--ink)", color: "var(--paper)", padding: "1.4rem", display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 390 }}>
+                <div>
+                  <span className="metric-pill" style={{ background: "rgba(255,255,255,0.1)", color: "#fff", borderColor: "rgba(255,255,255,0.14)" }}>
+                    <Trophy style={{ width: 14, height: 14 }} /> Better matches
+                  </span>
+                  <h2 style={{ fontSize: "1.6rem", fontWeight: 900, lineHeight: 1.08, marginTop: "1.1rem" }}>The right pet is a lifestyle fit, not just a cute face.</h2>
+                </div>
+                <div>
+                  <div style={{ height: 9, borderRadius: 999, background: "rgba(255,255,255,0.13)", overflow: "hidden", marginBottom: "0.8rem" }}>
+                    <div style={{ width: `${progress}%`, height: "100%", borderRadius: 999, background: "var(--accent)" }} />
+                  </div>
+                  <p style={{ color: "rgba(255,255,255,0.62)", fontSize: "0.84rem" }}>Question {step + 1} of {QUESTIONS.length}</p>
+                </div>
+              </aside>
 
-            <p style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", fontFamily: "var(--font-body)", marginBottom: "0.5rem" }}>
-              Question {step + 1} of {QUESTIONS.length}
-            </p>
-            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "2rem", color: "var(--ink)" }}>
-              {QUESTIONS[step].emoji} {QUESTIONS[step].q}
-            </h2>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {QUESTIONS[step].options.map(opt => (
-                <button key={opt.value} onClick={() => handleAnswer(QUESTIONS[step].key, opt.value)} style={{
-                  display: "flex", alignItems: "center", gap: 16, padding: "16px 20px",
-                  borderRadius: 16, border: "1.5px solid var(--border)", background: "white",
-                  cursor: "pointer", textAlign: "left", transition: "all 0.15s", width: "100%",
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.border = "1.5px solid var(--accent)"; e.currentTarget.style.background = "rgba(232,98,42,0.04)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.border = "1.5px solid var(--border)"; e.currentTarget.style.background = "white"; }}>
-                  <span style={{ fontSize: "1.6rem" }}>{opt.emoji}</span>
-                  <span style={{ fontFamily: "var(--font-body)", fontWeight: 600, fontSize: "0.95rem", color: "var(--ink)" }}>{opt.label}</span>
+              <section>
+                <button
+                  onClick={() => setStep((Math.max(0, step - 1) as Step))}
+                  disabled={step === 0}
+                  className="btn-ghost"
+                  style={{ width: "auto", minHeight: 36, opacity: step === 0 ? 0.4 : 1, marginBottom: "1rem" }}
+                >
+                  <ArrowLeft style={{ width: 14, height: 14 }} /> Back
                 </button>
-              ))}
+                <div style={{ width: 58, height: 58, borderRadius: 22, background: "rgba(232,93,42,0.1)", color: "var(--accent)", display: "grid", placeItems: "center", marginBottom: "1rem" }}>
+                  <CurrentIcon style={{ width: 28, height: 28 }} />
+                </div>
+                <h2 style={{ fontSize: "clamp(1.65rem,4vw,2.35rem)", fontWeight: 900, lineHeight: 1.05 }}>{current.q}</h2>
+                <p style={{ color: "var(--muted)", lineHeight: 1.65, marginTop: "0.65rem" }}>{current.helper}</p>
+
+                <div style={{ display: "grid", gap: 12, marginTop: "1.5rem" }}>
+                  {current.options.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => handleAnswer(current.key, option.value)}
+                      className="interactive-card"
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 34px",
+                        alignItems: "center",
+                        gap: 12,
+                        padding: "1rem",
+                        borderRadius: 20,
+                        border: "1px solid var(--border)",
+                        background: "rgba(255,255,255,0.76)",
+                        textAlign: "left",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <span>
+                        <strong style={{ display: "block", color: "var(--ink)", fontSize: "1rem" }}>{option.label}</strong>
+                        <span style={{ display: "block", color: "var(--muted)", fontSize: "0.86rem", marginTop: 3 }}>{option.desc}</span>
+                      </span>
+                      <span style={{ width: 34, height: 34, borderRadius: "50%", display: "grid", placeItems: "center", background: "var(--cream)", color: "var(--accent)" }}>
+                        <ArrowRight style={{ width: 16, height: 16 }} />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
             </div>
           </div>
         )}
 
-        {/* Loading */}
         {loading && (
-          <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
-            <div style={{ fontSize: "3rem", marginBottom: "1rem" }} className="spin">🔍</div>
-            <p style={{ fontFamily: "var(--font-display)", fontSize: "1.2rem", fontWeight: 700 }}>Finding your matches…</p>
+          <div className="glass-panel" style={{ borderRadius: 34, padding: "4rem 1.5rem", textAlign: "center" }}>
+            <Search className="spin" style={{ width: 46, height: 46, color: "var(--accent)", margin: "0 auto 1rem" }} />
+            <h2 style={{ fontSize: "1.8rem", fontWeight: 900 }}>Finding high-compatibility pets...</h2>
+            <p style={{ color: "var(--muted)", marginTop: 8 }}>Checking traits, home fit, and availability.</p>
           </div>
         )}
 
-        {/* Results */}
         {step === 5 && !loading && (
           <div>
-            <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-              <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>✨</div>
-              <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.8rem", fontWeight: 900, letterSpacing: "-0.04em" }}>
-                Your Top Matches!
-              </h2>
-              <p style={{ color: "var(--muted)", fontSize: "0.85rem", marginTop: "0.5rem", fontFamily: "var(--font-body)" }}>
-                Based on your answers, here are the best pets for you:
+            <div className="glass-panel" style={{ borderRadius: 34, padding: "2rem", textAlign: "center", marginBottom: "1.2rem" }}>
+              <Leaf style={{ width: 42, height: 42, color: "var(--sage)", margin: "0 auto 1rem" }} />
+              <h2 className="heading-lg">Your best-fit shortlist is ready.</h2>
+              <p className="lead" style={{ maxWidth: 620, margin: "0.85rem auto 0" }}>
+                These pets ranked highest for your lifestyle answers. Open a profile to review details and submit a request.
               </p>
             </div>
 
             {results.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "3rem", background: "white", borderRadius: 20 }}>
-                <p style={{ color: "var(--muted)", fontFamily: "var(--font-body)" }}>No available pets right now. Check back soon!</p>
-                <Link href="/pets" className="btn-ink" style={{ marginTop: "1.5rem", display: "inline-flex" }}>Browse All Pets</Link>
+              <div className="card-white" style={{ padding: "3rem 1.5rem", textAlign: "center" }}>
+                <PawPrint style={{ width: 44, height: 44, color: "var(--accent)", margin: "0 auto 1rem" }} />
+                <h2 style={{ fontSize: "1.5rem", fontWeight: 900 }}>No available matches right now</h2>
+                <p style={{ color: "var(--muted)", marginTop: 8 }}>Browse all pets or try again with broader preferences.</p>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.25rem" }}>
-                {results.map((pet, i) => {
-                  const sc = STATUS_BG[pet.status] ?? STATUS_BG.AVAILABLE;
-                  return (
-                    <Link key={pet.id} href={`/pets/${pet.id}`} style={{ textDecoration: "none" }}>
-                      <div style={{
-                        background: "white", borderRadius: 20, overflow: "hidden",
-                        border: i === 0 ? "2px solid var(--accent)" : "1px solid rgba(0,0,0,0.06)",
-                        transition: "transform 0.3s, box-shadow 0.3s", position: "relative",
-                      }}
-                        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 16px 40px rgba(0,0,0,0.1)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-                        {i === 0 && (
-                          <div style={{ position: "absolute", top: 12, right: 12, zIndex: 10, background: "var(--accent)", color: "white", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 10px", borderRadius: "100px", fontFamily: "var(--font-body)" }}>
-                            Best Match ⭐
-                          </div>
-                        )}
-                        <div style={{ height: 180, position: "relative", background: "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "5rem" }}>
-                          {pet.photoUrl
-                            ? <Image src={pet.photoUrl} alt={pet.name} fill style={{ objectFit: "cover" }} sizes="300px" />
-                            : <span>{PET_EMOJI[pet.species] ?? "🐾"}</span>}
-                        </div>
-                        <div style={{ padding: "16px 18px 18px" }}>
-                          <p style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)" }}>{pet.name}</p>
-                          <p style={{ fontSize: "0.78rem", color: "var(--muted)", fontFamily: "var(--font-body)", marginBottom: "0.75rem" }}>{pet.breed} · {pet.species}</p>
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                            {pet.traits.slice(0, 3).map(t => (
-                              <span key={t} style={{ fontSize: "0.65rem", fontWeight: 600, padding: "3px 9px", borderRadius: "100px", background: "var(--cream)", color: "var(--muted)", fontFamily: "var(--font-body)" }}>{t}</span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
+              <div className="responsive-grid">
+                {results.map((pet) => <PetCard key={pet.id} pet={pet} />)}
               </div>
             )}
 
-            <div style={{ display: "flex", gap: 12, marginTop: "2rem", justifyContent: "center" }}>
-              <button onClick={restart} className="btn-outline">Try Again</button>
-              <Link href="/pets" className="btn-ink">Browse All Pets →</Link>
+            <div className="mobile-stack" style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: "1.6rem" }}>
+              <button onClick={restart} className="btn-outline" style={{ width: "auto" }}>
+                <RotateCcw style={{ width: 16, height: 16 }} /> Try again
+              </button>
+              <Link href="/pets" className="btn-ink" style={{ width: "auto" }}>
+                Browse all pets <ArrowRight style={{ width: 16, height: 16 }} />
+              </Link>
             </div>
           </div>
         )}

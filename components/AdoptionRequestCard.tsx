@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Check, X, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { AdoptionRequest, RequestStatus } from "@/types";
+import { useToast } from "./ToastProvider";
 
 interface Props {
   request: AdoptionRequest;
@@ -21,6 +22,7 @@ const STATUS_CFG: Record<RequestStatus, { label: string; bg: string; color: stri
 };
 
 export function AdoptionRequestCard({ request, showActions, onUpdate }: Props) {
+  const { showToast } = useToast();
   const [reviewNote, setReviewNote] = useState("");
   const [reviewing,  setReviewing]  = useState(false);
   const [loading,    setLoading]    = useState(false);
@@ -38,8 +40,15 @@ export function AdoptionRequestCard({ request, showActions, onUpdate }: Props) {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       onUpdate?.(request.id, status, reviewNote);
+      showToast({
+        title: status === "APPROVED" ? "Request approved" : "Request rejected",
+        message: `${request.pet?.name ?? "This request"} has been updated.`,
+        tone: "success",
+      });
       setReviewing(false);
-    } catch (e: any) { alert(e.message); } finally { setLoading(false); }
+    } catch (e: any) {
+      showToast({ title: "Could not update request", message: e.message, tone: "error" });
+    } finally { setLoading(false); }
   }
 
   return (

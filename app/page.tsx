@@ -1,153 +1,179 @@
 "use client";
+
+import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight, BadgeCheck, ClipboardCheck, Heart, HeartHandshake, PawPrint, Search, ShieldCheck, Sparkles, Trophy } from "lucide-react";
+
+const heroPets = [
+  {
+    name: "Milo",
+    detail: "Gentle, house-trained, ready this week",
+    image: "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=900&q=85",
+    bg: "linear-gradient(145deg,#f2c39e,#8bbd94)",
+  },
+  {
+    name: "Nala",
+    detail: "Calm indoor companion, loves sunny corners",
+    image: "https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=900&q=85",
+    bg: "linear-gradient(145deg,#d5e7f4,#e6c6d2)",
+  },
+  {
+    name: "Ollie",
+    detail: "Playful, vaccinated, great with families",
+    image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&w=900&q=85",
+    bg: "linear-gradient(145deg,#f3d59b,#e59a84)",
+  },
+];
+
+const trustStats = [
+  ["2,400+", "successful adoptions"],
+  ["180+", "pets ready now"],
+  ["24h", "average first response"],
+];
 
 export default function HomePage() {
   return (
-    <div style={{ overflow: "hidden" }}>
-
-      {/* HERO */}
-      <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: "calc(100vh - 64px)" }}>
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "5rem 4rem 5rem 5rem" }}>
-          <div className="eyebrow anim-fade-up" style={{ marginBottom: "1.5rem" }}>Find Your Forever Friend</div>
-          <h1 className="anim-fade-up anim-d1" style={{
-            fontFamily: "var(--font-display)", fontSize: "clamp(3rem,5.5vw,5rem)",
-            fontWeight: 900, lineHeight: 1.0, letterSpacing: "-0.04em", color: "var(--ink)", marginBottom: "1.5rem",
-          }}>
-            Every pet<br/>deserves a<br/><em style={{ fontStyle: "italic", color: "var(--accent)" }}>loving home.</em>
-          </h1>
-          <p className="anim-fade-up anim-d2" style={{ fontSize: "1rem", lineHeight: 1.75, color: "var(--muted)", maxWidth: 400, marginBottom: "2.5rem", fontFamily: "var(--font-body)" }}>
-            Connect with animals ready for adoption. Browse profiles, submit your application, and give a pet the family they've been waiting for.
-          </p>
-          <div className="anim-fade-up anim-d3" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <Link href="/pets"          className="btn-ink">Browse Pets ↓</Link>
-            <Link href="/auth/register" className="btn-outline">Join Free</Link>
-            <Link href="/match" className="btn-ghost">🤖 Find My Match</Link>
-          </div>
-          <div className="anim-fade-up anim-d4" style={{ display: "flex", gap: "2.5rem", marginTop: "3.5rem", paddingTop: "2.5rem", borderTop: "1px solid var(--border)" }}>
-            {[{ n: "2,400+", l: "Pets Adopted" }, { n: "180+", l: "Available Now" }, { n: "98%", l: "Happy Owners" }].map(s => (
-              <div key={s.l}>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>{s.n}</div>
-                <div style={{ fontSize: "0.72rem", color: "var(--muted)", fontWeight: 500, letterSpacing: "0.04em", marginTop: 4, fontFamily: "var(--font-body)" }}>{s.l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Collage */}
-        <div style={{ background: "var(--cream)", position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", inset: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 12 }}>
-            {[
-              { emoji: "🐶", name: "Buddy",  breed: "Golden Retriever · 2 yrs", bg: "linear-gradient(145deg,#c9b99a,#b5a282)", span: true  },
-              { emoji: "🐱", name: "Luna",   breed: "Siamese Mix · 3 yrs",      bg: "linear-gradient(145deg,#c8dfc8,#aec9ae)", span: false },
-              { emoji: "🐶", name: "Peanut", breed: "Beagle · 1.5 yrs",         bg: "linear-gradient(145deg,#d4bea0,#c4aa8a)", span: false },
-            ].map((p, i) => (
-              <div key={p.name} className="anim-fade-up" style={{
-                borderRadius: 16, overflow: "hidden", position: "relative",
-                animationDelay: `${0.1 + i * 0.12}s`,
-                ...(p.span ? { gridRow: "span 2" } : {}),
-              }}>
-                <div style={{ width: "100%", height: "100%", background: p.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: p.span ? "5rem" : "3.5rem" }}>
-                  {p.emoji}
-                </div>
-                <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(74,222,128,0.85)", color: "#14532d", fontSize: "0.58rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 10px", borderRadius: "100px", fontFamily: "var(--font-body)" }}>
-                  Available
-                </span>
-                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 14px", background: "linear-gradient(to top,rgba(0,0,0,0.65),transparent)" }}>
-                  <p style={{ fontFamily: "var(--font-display)", fontSize: "1rem", fontWeight: 700, color: "white" }}>{p.name}</p>
-                  <p style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.8)", marginTop: 2, fontFamily: "var(--font-body)" }}>{p.breed}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* MARQUEE */}
-      <div style={{ background: "var(--ink)", padding: "13px 0", overflow: "hidden", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="marquee-run" style={{ display: "flex", gap: "3rem", width: "max-content" }}>
-          {["Dogs","Cats","Rabbits","Birds","Adopt Don't Shop","Forever Homes","Give Love Get Love",
-            "Dogs","Cats","Rabbits","Birds","Adopt Don't Shop","Forever Homes","Give Love Get Love"].map((t, i) => (
-            <span key={i} style={{ display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap", fontFamily: "var(--font-body)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}>
-              <span style={{ width: 4, height: 4, background: "var(--accent)", borderRadius: "50%", display: "inline-block" }} />
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* HOW IT WORKS */}
-      <section style={{ padding: "7rem 5rem", background: "var(--cream)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-            <div className="eyebrow" style={{ justifyContent: "center", marginBottom: "1rem" }}>How It Works</div>
-            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1.05 }}>
-              From browse to <em style={{ fontStyle: "italic", color: "var(--accent)" }}>best friend</em>
-            </h2>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1.5rem" }}>
-            {[
-              { num: "01", emoji: "🔍", title: "Browse & Filter", desc: "Explore pets by species, age, temperament, and compatibility. Each profile has photos, traits, and health info.", badge: "No login needed" },
-              { num: "02", emoji: "📋", title: "Submit Request",  desc: "Fill a short adoption form — your home type, experience, a message. Earn 100 points for your first request!", badge: "Earn 100 pts" },
-              { num: "03", emoji: "🏡", title: "Welcome Home!",   desc: "Our team reviews and contacts you to arrange a meet. Approval earns you 200 points and a new family member.", badge: "Earn 200 pts" },
-            ].map(s => (
-              <div key={s.num} style={{ background: "white", borderRadius: 20, padding: "2rem", position: "relative", overflow: "hidden", border: "1px solid rgba(0,0,0,0.06)", transition: "transform 0.3s, box-shadow 0.3s" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 16px 48px rgba(0,0,0,0.1)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-                <span style={{ position: "absolute", top: 12, right: 16, fontFamily: "var(--font-display)", fontSize: "5rem", fontWeight: 900, color: "rgba(0,0,0,0.04)", lineHeight: 1 }}>{s.num}</span>
-                <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>{s.emoji}</div>
-                <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.15rem", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: "0.75rem" }}>{s.title}</h3>
-                <p style={{ fontSize: "0.85rem", color: "var(--muted)", lineHeight: 1.7, fontFamily: "var(--font-body)" }}>{s.desc}</p>
-                <span style={{ display: "inline-block", marginTop: "1rem", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 12px", borderRadius: "100px", background: "rgba(232,98,42,0.1)", color: "var(--accent)", border: "1px solid rgba(232,98,42,0.2)", fontFamily: "var(--font-body)" }}>
-                  {s.badge}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section style={{ padding: "7rem 5rem" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6rem", alignItems: "center" }}>
-          <div>
-            <div className="eyebrow" style={{ marginBottom: "1rem" }}>Why Pawsible</div>
-            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1.05, marginBottom: "1.5rem" }}>
-              The smarter way to <em style={{ fontStyle: "italic", color: "var(--accent)" }}>adopt</em>
-            </h2>
-            <p style={{ fontSize: "0.95rem", color: "var(--muted)", lineHeight: 1.8, fontFamily: "var(--font-body)" }}>
-              Pawsible is more than a listing site. It's a platform that makes the entire adoption journey transparent, rewarding, and joyful — for both you and your new pet.
+    <div>
+      <section className="premium-hero">
+        <div className="wide-shell hero-grid" style={{ minHeight: "calc(100vh - 68px)", display: "grid", gridTemplateColumns: "0.9fr 1.1fr", alignItems: "center", gap: "clamp(2rem, 6vw, 5rem)", padding: "clamp(3rem, 6vw, 5.5rem) 0" }}>
+          <div className="anim-fade-up">
+            <div className="eyebrow" style={{ marginBottom: "1.2rem" }}>Premium adoption platform</div>
+            <h1 className="heading-xl">Find the pet your home has been waiting for.</h1>
+            <p className="lead" style={{ marginTop: "1.35rem", maxWidth: 610 }}>
+              Pawsible turns adoption into a warm, guided experience: emotionally rich pet profiles, smarter matching, trusted request workflows, and rewards for people who keep showing up for animals.
             </p>
-            <Link href="/pets" className="btn-ink" style={{ marginTop: "2.5rem", display: "inline-flex" }}>Start Browsing →</Link>
+            <div className="mobile-stack" style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: "2rem" }}>
+              <Link href="/pets" className="btn-ink" style={{ width: "auto" }}>
+                Explore adoptable pets <ArrowRight style={{ width: 16, height: 16 }} />
+              </Link>
+              <Link href="/match" className="btn-outline" style={{ width: "auto" }}>
+                <Sparkles style={{ width: 16, height: 16 }} /> Start matching
+              </Link>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: "2rem" }}>
+              {[
+                [ShieldCheck, "Verified shelter flows"],
+                [Heart, "Saved pet journeys"],
+                [Trophy, "Reward tiers"],
+              ].map(([Icon, label]) => {
+                const LucideIcon = Icon as typeof ShieldCheck;
+                return (
+                  <span key={label as string} className="metric-pill">
+                    <LucideIcon style={{ width: 15, height: 15, color: "var(--accent)" }} /> {label as string}
+                  </span>
+                );
+              })}
+            </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+
+          <div className="anim-fade-up anim-d2" style={{ position: "relative", minHeight: 620 }}>
+            <div style={{ position: "absolute", inset: "0 0 auto 13%", display: "grid", gridTemplateColumns: "1.08fr 0.92fr", gap: 16, alignItems: "stretch" }}>
+              <article className="pet-portrait" style={{ "--portrait-bg": heroPets[0].bg, height: 560 } as React.CSSProperties}>
+                <Image src={heroPets[0].image} alt={`${heroPets[0].name} available for adoption`} fill priority style={{ objectFit: "cover" }} sizes="(max-width: 920px) 90vw, 520px" />
+                <div style={{ position: "absolute", inset: "auto 20px 20px", color: "#fff" }}>
+                  <span className="status-badge" style={{ background: "rgba(255,255,255,0.82)", color: "#24745a", border: "1px solid rgba(255,255,255,0.6)" }}>Available now</span>
+                  <h2 style={{ fontSize: "2.35rem", fontWeight: 900, marginTop: "0.75rem", textShadow: "0 12px 32px rgba(0,0,0,0.35)" }}>{heroPets[0].name}</h2>
+                  <p style={{ maxWidth: 320, color: "rgba(255,255,255,0.86)", lineHeight: 1.55 }}>{heroPets[0].detail}</p>
+                </div>
+              </article>
+              <div style={{ display: "grid", gap: 16, paddingTop: 44 }}>
+                {heroPets.slice(1).map((pet) => (
+                  <article key={pet.name} className="pet-portrait" style={{ "--portrait-bg": pet.bg, minHeight: 250 } as React.CSSProperties}>
+                    <Image src={pet.image} alt={`${pet.name} available for adoption`} fill style={{ objectFit: "cover" }} sizes="(max-width: 920px) 45vw, 320px" />
+                    <div style={{ position: "absolute", inset: "auto 16px 16px", color: "#fff" }}>
+                      <h3 style={{ fontSize: "1.55rem", fontWeight: 900, textShadow: "0 12px 28px rgba(0,0,0,0.38)" }}>{pet.name}</h3>
+                      <p style={{ color: "rgba(255,255,255,0.82)", fontSize: "0.85rem", lineHeight: 1.45 }}>{pet.detail}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <div className="glass-panel" style={{ position: "absolute", left: 0, bottom: 28, borderRadius: 24, padding: "1rem", width: "min(370px, 88vw)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 46, height: 46, borderRadius: 16, display: "grid", placeItems: "center", background: "var(--ink)", color: "var(--paper)" }}>
+                  <PawPrint style={{ width: 24, height: 24 }} />
+                </div>
+                <div>
+                  <strong style={{ display: "block", fontSize: "0.98rem" }}>Live adoption journey</strong>
+                  <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>Browse, save, request, review, welcome home.</span>
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginTop: "1rem" }}>
+                {trustStats.map(([value, label]) => (
+                  <div key={label} style={{ borderRadius: 16, background: "rgba(255,255,255,0.68)", padding: "0.75rem" }}>
+                    <strong style={{ display: "block", fontFamily: "var(--font-display)", fontSize: "1.25rem", lineHeight: 1 }}>{value}</strong>
+                    <span style={{ color: "var(--muted)", fontSize: "0.67rem", lineHeight: 1.25 }}>{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="feature-band section">
+        <div className="container">
+          <div style={{ display: "grid", gridTemplateColumns: "0.8fr 1.2fr", gap: "clamp(2rem,5vw,4rem)", alignItems: "start" }} className="hero-grid">
+            <div>
+              <div className="eyebrow">Designed for decisions</div>
+              <h2 className="heading-lg" style={{ marginTop: "0.9rem" }}>Every screen helps someone feel more certain.</h2>
+              <p className="lead" style={{ marginTop: "1rem" }}>
+                The platform balances emotion with practical trust signals, so adopters can fall in love and still make a responsible choice.
+              </p>
+            </div>
+            <div className="responsive-grid">
+              {[
+                { Icon: Search, title: "High-signal discovery", desc: "Search, filters, availability, traits, health markers, and compatibility cues are visible where people need them." },
+                { Icon: ClipboardCheck, title: "Guided requests", desc: "Adoption forms ask the right questions without feeling bureaucratic or cold." },
+                { Icon: HeartHandshake, title: "Admin confidence", desc: "Shelters get cleaner dashboards, clearer review actions, and visible request context." },
+                { Icon: BadgeCheck, title: "Reward motivation", desc: "Point ranking now includes meaningful tiers and next-milestone progress." },
+              ].map(({ Icon, title, desc }) => (
+                <article key={title} className="glass-panel interactive-card" style={{ borderRadius: 24, padding: "1.35rem" }}>
+                  <Icon style={{ width: 26, height: 26, color: "var(--accent)", marginBottom: "1rem" }} />
+                  <h3 style={{ fontSize: "1.16rem", fontWeight: 900 }}>{title}</h3>
+                  <p style={{ color: "var(--muted)", lineHeight: 1.65, fontSize: "0.9rem", marginTop: "0.55rem" }}>{desc}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section" style={{ background: "var(--ink)", color: "var(--paper)" }}>
+        <div className="container hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(2rem,5vw,5rem)", alignItems: "center" }}>
+          <div>
+            <div className="eyebrow">From maybe to yes</div>
+            <h2 className="heading-lg" style={{ marginTop: "0.9rem" }}>A more beautiful adoption flow can create more confident adopters.</h2>
+          </div>
+          <div style={{ display: "grid", gap: 12 }}>
             {[
-              { emoji: "🛡️", title: "Verified Shelters",  desc: "All partners are vetted and certified." },
-              { emoji: "🏆", title: "Earn Rewards",        desc: "Earn points for every action on the platform." },
-              { emoji: "📸", title: "Rich Profiles",       desc: "Photos, traits, health info — everything you need." },
-              { emoji: "📊", title: "Live Tracking",       desc: "Track your request status in real-time." },
-              { emoji: "🤖", title: "Smart Matching",      desc: "Tell us your prefs, we match you with the right pet." },
-              { emoji: "❤️", title: "Caring Community",   desc: "Join thousands of pet lovers worldwide." },
-            ].map(f => (
-              <div key={f.title} style={{ background: "var(--cream)", borderRadius: 16, padding: "1.25rem", border: "1px solid rgba(0,0,0,0.06)" }}>
-                <div style={{ fontSize: "1.5rem", marginBottom: "0.6rem" }}>{f.emoji}</div>
-                <p style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "0.9rem", letterSpacing: "-0.01em", marginBottom: "0.3rem" }}>{f.title}</p>
-                <p style={{ fontSize: "0.75rem", color: "var(--muted)", lineHeight: 1.6, fontFamily: "var(--font-body)" }}>{f.desc}</p>
+              ["Browse", "Discover pets through emotional, image-led cards with clear practical signals."],
+              ["Match", "Answer a short lifestyle quiz to surface compatible companions."],
+              ["Request", "Submit a focused adoption request and track status as it moves."],
+              ["Reward", "Earn points and climb visible tiers for positive platform actions."],
+            ].map(([step, text], index) => (
+              <div key={step} style={{ display: "grid", gridTemplateColumns: "48px 1fr", gap: 14, alignItems: "center", padding: "1rem", borderRadius: 22, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <span style={{ width: 48, height: 48, borderRadius: 16, display: "grid", placeItems: "center", background: index === 0 ? "var(--accent)" : "rgba(255,255,255,0.1)", fontWeight: 900 }}>{index + 1}</span>
+                <span>
+                  <strong style={{ display: "block" }}>{step}</strong>
+                  <span style={{ color: "rgba(255,255,255,0.62)", fontSize: "0.88rem", lineHeight: 1.55 }}>{text}</span>
+                </span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section style={{ background: "var(--ink)", padding: "6rem 5rem", textAlign: "center" }}>
-        <div style={{ fontSize: "3.5rem", marginBottom: "1.5rem" }}>🐶🐱</div>
-        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 900, letterSpacing: "-0.04em", color: "var(--paper)", marginBottom: "1rem" }}>
-          Ready to meet your match?
-        </h2>
-        <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "1rem", marginBottom: "2.5rem", fontFamily: "var(--font-body)" }}>
-          Hundreds of pets are waiting for a loving home.
-        </p>
-        <Link href="/pets" className="btn-accent" style={{ fontSize: "1rem", padding: "14px 36px" }}>Find My Pet →</Link>
+      <section className="section" style={{ textAlign: "center" }}>
+        <div className="container" style={{ maxWidth: 760 }}>
+          <Sparkles style={{ width: 44, height: 44, color: "var(--accent)", margin: "0 auto 1rem" }} />
+          <h2 className="heading-lg">Ready to meet someone unforgettable?</h2>
+          <p className="lead" style={{ margin: "1rem auto 2rem" }}>Start with the browse page, or let the matching flow guide you to pets that fit your home and rhythm.</p>
+          <div className="mobile-stack" style={{ display: "flex", justifyContent: "center", gap: 12 }}>
+            <Link href="/pets" className="btn-ink" style={{ width: "auto" }}>Browse pets</Link>
+            <Link href="/match" className="btn-outline" style={{ width: "auto" }}>Find a match</Link>
+          </div>
+        </div>
       </section>
     </div>
   );

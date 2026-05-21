@@ -5,17 +5,23 @@ import {
 } from "recharts";
 import { DashboardStats } from "@/types";
 
-const COLORS = ["#e8622a","#d4a843","#7a9e7e","#6366f1","#f472b6"];
+const COLORS = ["#e85d2a", "#c9952f", "#3f8f72", "#3976d8", "#d83f62"];
 
 interface Props { stats: DashboardStats; }
 
 const cardStyle: React.CSSProperties = {
-  background: "white", borderRadius: 20, padding: "1.5rem",
-  border: "1px solid rgba(0,0,0,0.06)",
+  borderRadius: 24,
+  padding: "1.35rem",
+  border: "1px solid var(--border)",
+  background: "linear-gradient(145deg, rgba(255,255,255,0.9), rgba(255,250,243,0.74))",
+  boxShadow: "var(--shadow-sm)",
 };
 const titleStyle: React.CSSProperties = {
-  fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1rem",
-  letterSpacing: "-0.02em", marginBottom: "1.25rem", color: "var(--ink)",
+  fontFamily: "var(--font-display)",
+  fontWeight: 900,
+  fontSize: "1.15rem",
+  marginBottom: "1rem",
+  color: "var(--ink)",
 };
 
 export function ChartDashboard({ stats }: Props) {
@@ -33,7 +39,7 @@ export function ChartDashboard({ stats }: Props) {
   })) ?? [];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+    <div className="chart-grid">
       {/* Monthly bar chart */}
       <div style={cardStyle}>
         <p style={titleStyle}>Adoptions by Month</p>
@@ -44,10 +50,10 @@ export function ChartDashboard({ stats }: Props) {
               <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--muted)", fontFamily: "var(--font-body)" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: "var(--muted)", fontFamily: "var(--font-body)" }} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontFamily: "var(--font-body)", fontSize: 12, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}
+                contentStyle={{ borderRadius: 14, border: "1px solid var(--border)", fontFamily: "var(--font-body)", fontSize: 12, boxShadow: "var(--shadow-sm)" }}
                 cursor={{ fill: "rgba(232,98,42,0.06)" }}
               />
-              <Bar dataKey="value" fill="var(--accent)" radius={[6,6,0,0]} name="Adoptions" />
+              <Bar dataKey="value" fill="var(--accent)" radius={[10,10,0,0]} name="Adoptions" />
             </BarChart>
           </ResponsiveContainer>
         ) : (
@@ -67,7 +73,7 @@ export function ChartDashboard({ stats }: Props) {
                 dataKey="value" paddingAngle={3}>
                 {statusData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Pie>
-              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontFamily: "var(--font-body)", fontSize: 12 }} />
+              <Tooltip contentStyle={{ borderRadius: 14, border: "1px solid var(--border)", fontFamily: "var(--font-body)", fontSize: 12, boxShadow: "var(--shadow-sm)" }} />
               <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, fontFamily: "var(--font-body)" }} />
             </PieChart>
           </ResponsiveContainer>
@@ -87,8 +93,8 @@ export function ChartDashboard({ stats }: Props) {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 11, fill: "var(--muted)", fontFamily: "var(--font-body)" }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "var(--muted)", fontFamily: "var(--font-body)" }} axisLine={false} tickLine={false} width={60} />
-              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontFamily: "var(--font-body)", fontSize: 12 }} cursor={{ fill: "rgba(232,98,42,0.06)" }} />
-              <Bar dataKey="value" radius={[0,6,6,0]} name="Pets">
+              <Tooltip contentStyle={{ borderRadius: 14, border: "1px solid var(--border)", fontFamily: "var(--font-body)", fontSize: 12, boxShadow: "var(--shadow-sm)" }} cursor={{ fill: "rgba(232,98,42,0.06)" }} />
+              <Bar dataKey="value" radius={[0,10,10,0]} name="Pets">
                 {speciesData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Bar>
             </BarChart>
@@ -111,7 +117,7 @@ export function ChartDashboard({ stats }: Props) {
             { label: "Approved Requests",   value: stats.approvedRequests },
             { label: "Registered Users",    value: stats.totalUsers       },
           ].map(s => (
-            <div key={s.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "var(--cream)", borderRadius: 12 }}>
+            <div key={s.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.85rem 0.95rem", background: "rgba(241,234,223,0.78)", border: "1px solid var(--border)", borderRadius: 16 }}>
               <span style={{ fontSize: "0.8rem", color: "var(--muted)", fontFamily: "var(--font-body)" }}>{s.label}</span>
               <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.1rem", color: "var(--ink)" }}>{s.value ?? 0}</span>
             </div>

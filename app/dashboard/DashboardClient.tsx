@@ -31,7 +31,7 @@ export function DashboardClient({ user }: { user: any }) {
   ] : [];
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "3rem 2rem 5rem" }}>
+    <div className="page-shell">
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between",
         marginBottom: "2.5rem", flexWrap: "wrap", gap: "1rem" }}>
@@ -58,12 +58,12 @@ export function DashboardClient({ user }: { user: any }) {
 
       {/* Stat cards */}
       {loading && !stats ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: "2rem" }}>
+        <div className="stat-grid" style={{ marginBottom: "2rem" }}>
           {[1,2,3,4].map(i => <div key={i} className="card-white" style={{ height: 110, animation: "pulse 1.5s ease-in-out infinite" }} />)}
         </div>
       ) : stats && (
         <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: "2rem" }}>
+          <div className="stat-grid" style={{ marginBottom: "2rem" }}>
             {statCards.map(s => (
               <div key={s.label} style={{ borderRadius: 20, padding: "1.5rem",
                 background: s.bg, border: "1px solid rgba(0,0,0,0.05)" }}>

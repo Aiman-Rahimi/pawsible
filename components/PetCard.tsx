@@ -1,115 +1,128 @@
 "use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { Heart } from "lucide-react";
+import { Baby, Heart, PawPrint, ShieldCheck, Sparkles } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { Pet } from "@/types";
+import { useToast } from "./ToastProvider";
 
-const PET_EMOJI: Record<string, string> = { Dog:"🐶", Cat:"🐱", Rabbit:"🐰", Bird:"🐦", Hamster:"🐹" };
-const PET_BGS = [
-  "linear-gradient(145deg,#c9b99a,#b5a282)",
-  "linear-gradient(145deg,#c8dfc8,#aec9ae)",
-  "linear-gradient(145deg,#d4bea0,#c4aa8a)",
-  "linear-gradient(145deg,#d7c8e8,#c2aedb)",
-  "linear-gradient(145deg,#e8c8c8,#d4aaaa)",
-];
-function hashBg(id: string) {
-  let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % PET_BGS.length;
-  return PET_BGS[h];
-}
 const STATUS: Record<string, { label: string; bg: string; color: string; border: string }> = {
-  AVAILABLE: { label: "Available", bg: "rgba(74,222,128,0.18)", color: "#15803d", border: "rgba(74,222,128,0.3)" },
-  PENDING:   { label: "Pending",   bg: "rgba(251,191,36,0.18)", color: "#92400e", border: "rgba(251,191,36,0.3)" },
-  ADOPTED:   { label: "Adopted",   bg: "rgba(0,0,0,0.06)",     color: "#6b6560", border: "rgba(0,0,0,0.1)"      },
+  AVAILABLE: { label: "Available", bg: "rgba(63,143,114,0.14)", color: "#24745a", border: "rgba(63,143,114,0.22)" },
+  PENDING: { label: "Pending", bg: "rgba(201,149,47,0.16)", color: "#8a5f10", border: "rgba(201,149,47,0.26)" },
+  ADOPTED: { label: "Adopted", bg: "rgba(22,20,18,0.07)", color: "var(--muted)", border: "rgba(22,20,18,0.12)" },
 };
+
+function ageLabel(age: number) {
+  if (age < 1) return "Under 1 year";
+  return `${age} year${age === 1 ? "" : "s"}`;
+}
 
 export function PetCard({ pet, isFavorited: initFav = false }: { pet: Pet; isFavorited?: boolean }) {
   const { data: session } = useSession();
+  const { showToast } = useToast();
   const [favorited, setFavorited] = useState(initFav);
-  const [loading,   setLoading]   = useState(false);
-  const s = STATUS[pet.status] ?? STATUS.AVAILABLE;
+  const [loading, setLoading] = useState(false);
+  const status = STATUS[pet.status] ?? STATUS.AVAILABLE;
 
   async function toggleFav(e: React.MouseEvent) {
     e.preventDefault();
-    if (!session) return;
+    if (!session || loading) return;
     setLoading(true);
-    const method = favorited ? "DELETE" : "POST";
-    await fetch(`/api/favorites/${pet.id}`, { method });
-    setFavorited(!favorited);
+    const nextValue = !favorited;
+    setFavorited(nextValue);
+    const method = nextValue ? "POST" : "DELETE";
+    const res = await fetch(`/api/favorites/${pet.id}`, { method });
+    if (!res.ok) {
+      setFavorited(!nextValue);
+      showToast({ title: "Could not update saved pets", message: "Please try again in a moment.", tone: "error" });
+    } else {
+      showToast({
+        title: nextValue ? "Saved to favorites" : "Removed from favorites",
+        message: nextValue ? `${pet.name} is now in your saved list.` : `${pet.name} was removed from your saved list.`,
+        tone: "success",
+      });
+    }
     setLoading(false);
   }
 
   return (
-    <Link href={`/pets/${pet.id}`} style={{ textDecoration: "none", display: "block" }}>
-      <div style={{
-        background: "white", borderRadius: 20, overflow: "hidden",
-        border: "1px solid rgba(0,0,0,0.06)", cursor: "pointer",
-        transition: "transform 0.3s, box-shadow 0.3s",
-      }}
-        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(0,0,0,0.12)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-        {/* Image */}
-        <div style={{
-          height: 210, position: "relative", background: hashBg(pet.id),
-          display: "flex", alignItems: "center", justifyContent: "center", fontSize: "5.5rem",
-        }}>
+    <article className="card-white interactive-card" style={{ height: "100%", overflow: "hidden", position: "relative" }}>
+      <Link href={`/pets/${pet.id}`} style={{ textDecoration: "none", display: "block", color: "inherit" }}>
+        <div
+          style={{
+            height: 230,
+            position: "relative",
+            background: "linear-gradient(135deg, #f4dac8, #d7eadc)",
+            display: "grid",
+            placeItems: "center",
+          }}
+        >
           {pet.photoUrl ? (
-            <Image src={pet.photoUrl} alt={pet.name} fill style={{ objectFit: "cover" }} sizes="300px" />
+            <Image src={pet.photoUrl} alt={pet.name} fill style={{ objectFit: "cover" }} sizes="(max-width: 768px) 100vw, 330px" />
           ) : (
-            <span>{PET_EMOJI[pet.species] ?? "🐾"}</span>
+            <PawPrint style={{ width: 72, height: 72, color: "rgba(22,20,18,0.28)" }} />
           )}
-          <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <span style={{ fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-              padding: "4px 10px", borderRadius: "100px", background: s.bg, color: s.color, border: `1px solid ${s.border}` }}>
-              {s.label}
+          <div style={{ position: "absolute", inset: "12px auto auto 12px", display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <span className="status-badge" style={{ background: status.bg, color: status.color, border: `1px solid ${status.border}` }}>
+              {status.label}
             </span>
-            {session && (
-              <button onClick={toggleFav} disabled={loading} style={{
-                width: 32, height: 32, background: "rgba(255,255,255,0.9)", borderRadius: "50%",
-                border: "none", display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", transition: "transform 0.2s",
-                opacity: loading ? 0.6 : 1,
-              }}
-                onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.15)")}
-                onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}>
-                <Heart style={{ width: 14, height: 14, color: favorited ? "#ef4444" : "#9ca3af" }} fill={favorited ? "#ef4444" : "none"} />
-              </button>
-            )}
           </div>
         </div>
-        {/* Body */}
-        <div style={{ padding: "18px 20px 20px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
-            <span style={{ fontFamily: "var(--font-display)", fontSize: "1.2rem", fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)" }}>
-              {pet.name}
-            </span>
-            <span style={{ fontSize: "0.68rem", color: "var(--muted)", background: "var(--cream)", padding: "3px 10px", borderRadius: "100px", fontWeight: 600, fontFamily: "var(--font-body)" }}>
-              {pet.gender}
-            </span>
+
+        <div style={{ padding: "1.1rem 1.15rem 1.2rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
+            <div>
+              <h3 style={{ fontSize: "1.35rem", fontWeight: 900, color: "var(--ink)", lineHeight: 1.05 }}>{pet.name}</h3>
+              <p style={{ color: "var(--muted)", fontSize: "0.86rem", marginTop: 5 }}>
+                {pet.breed} - {ageLabel(pet.age)}
+              </p>
+            </div>
+            <span className="badge-soft">{pet.gender}</span>
           </div>
-          <p style={{ fontSize: "0.8rem", color: "var(--muted)", marginBottom: "0.75rem", fontFamily: "var(--font-body)" }}>
-            {pet.breed} &bull; {pet.age < 1 ? "< 1 yr" : `${pet.age} yr${pet.age !== 1 ? "s" : ""}`}
-          </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: "0.75rem" }}>
-            {pet.traits.slice(0, 3).map(t => (
-              <span key={t} style={{ fontSize: "0.68rem", fontWeight: 600, padding: "4px 11px", borderRadius: "100px", background: "var(--cream)", color: "var(--muted)", fontFamily: "var(--font-body)" }}>
-                {t}
-              </span>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: "0.95rem", minHeight: 30 }}>
+            {pet.traits.slice(0, 3).map((trait) => (
+              <span className="trait-tag" key={trait}>{trait}</span>
             ))}
           </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "0.75rem", borderTop: "1px solid var(--border)" }}>
-            <div style={{ display: "flex", gap: 10, fontSize: "0.68rem", color: "var(--muted)", fontFamily: "var(--font-body)" }}>
-              {pet.goodWithKids && <span>👶 Kids</span>}
-              {pet.goodWithPets && <span>🐾 Pets</span>}
-              {pet.vaccinated   && <span>💉</span>}
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", gap: 8, color: "var(--muted)" }}>
+              {pet.goodWithKids && <Baby style={{ width: 16, height: 16 }} aria-label="Good with kids" />}
+              {pet.goodWithPets && <PawPrint style={{ width: 16, height: 16 }} aria-label="Good with pets" />}
+              {pet.vaccinated && <ShieldCheck style={{ width: 16, height: 16 }} aria-label="Vaccinated" />}
             </div>
-            <span style={{ fontSize: "0.68rem", fontWeight: 700, padding: "6px 14px", borderRadius: "100px", background: "var(--ink)", color: "var(--paper)", fontFamily: "var(--font-body)" }}>
-              Adopt →
+            <span className="reward-badge" style={{ color: "var(--ink)", background: "var(--cream)", borderColor: "var(--border)" }}>
+              <Sparkles style={{ width: 13, height: 13 }} /> Meet {pet.name}
             </span>
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+      {session && (
+        <button
+          onClick={toggleFav}
+          disabled={loading}
+          aria-label={favorited ? "Remove from saved pets" : "Save pet"}
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            width: 38,
+            height: 38,
+            borderRadius: "50%",
+            border: "1px solid rgba(255,255,255,0.7)",
+            background: "rgba(255,255,255,0.9)",
+            display: "grid",
+            placeItems: "center",
+            cursor: "pointer",
+            boxShadow: "0 10px 24px rgba(0,0,0,0.12)",
+          }}
+        >
+          <Heart style={{ width: 17, height: 17, color: favorited ? "var(--rose)" : "var(--muted)" }} fill={favorited ? "currentColor" : "none"} />
+        </button>
+      )}
+    </article>
   );
 }

@@ -107,6 +107,24 @@ export interface LeaderboardEntry {
   points: number;
   rank: number;
   adoptionsApproved: number;
+  rewardTier: {
+    key: string;
+    name: string;
+    minPoints: number;
+    perk: string;
+    accent: string;
+  };
+  nextReward: {
+    tier: {
+      key: string;
+      name: string;
+      minPoints: number;
+      perk: string;
+      accent: string;
+    } | null;
+    pointsNeeded: number;
+    progress: number;
+  };
 }
 
 // API response wrappers

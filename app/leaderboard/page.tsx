@@ -1,174 +1,150 @@
 // app/leaderboard/page.tsx
 "use client";
+
 import { useState, useEffect } from "react";
-import { Trophy } from "lucide-react";
+import { Award, Crown, Gift, Medal, Sparkles, Trophy } from "lucide-react";
 import { LeaderboardEntry } from "@/types";
+
+const pointsGuide = [
+  ["Complete profile", "+50"],
+  ["First request", "+100"],
+  ["Approved adoption", "+200"],
+  ["Daily visit", "+5"],
+  ["Save a favorite", "+10"],
+  ["Leave a review", "+25"],
+];
 
 export default function LeaderboardPage() {
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetch("/api/leaderboard?limit=20")
-      .then(r => r.json())
-      .then(j => { setLeaders(j.data?.leaderboard ?? []); setLoading(false); });
+      .then((response) => response.json().then((json) => ({ response, json })))
+      .then(({ response, json }) => {
+        if (!response.ok) throw new Error(json.error ?? "Failed to load leaderboard");
+        setLeaders(json.data?.leaderboard ?? []);
+      })
+      .catch((err) => setError(err.message ?? "Failed to load leaderboard"))
+      .finally(() => setLoading(false));
   }, []);
 
   const top3 = leaders.slice(0, 3);
   const rest = leaders.slice(3);
 
-  const avatarColors = [
-    "linear-gradient(135deg,#f59e0b,#d97706)",
-    "linear-gradient(135deg,#6366f1,#4f46e5)",
-    "linear-gradient(135deg,#10b981,#059669)",
-    "linear-gradient(135deg,#f472b6,#ec4899)",
-    "linear-gradient(135deg,#fb923c,#f97316)",
-  ];
-
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: "3rem 2rem 5rem" }}>
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-        <div style={{ width: 60, height: 60, borderRadius: 18, background: "rgba(212,168,67,0.15)",
-          display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
-          <Trophy style={{ width: 28, height: 28, color: "var(--gold)" }} />
+    <div className="page-shell" style={{ maxWidth: 980 }}>
+      <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+        <div style={{ width: 66, height: 66, borderRadius: 22, background: "rgba(201,149,47,0.14)", color: "var(--gold)", display: "grid", placeItems: "center", margin: "0 auto 1rem" }}>
+          <Trophy style={{ width: 32, height: 32 }} />
         </div>
-        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem,4vw,2.8rem)",
-          fontWeight: 900, letterSpacing: "-0.04em" }}>Leaderboard</h1>
-        <p style={{ color: "var(--muted)", marginTop: 8, fontSize: "0.88rem", fontFamily: "var(--font-body)" }}>
-          Top adopters ranked by points earned.
+        <div className="eyebrow" style={{ justifyContent: "center" }}>Reward ranking</div>
+        <h1 className="heading-lg" style={{ marginTop: "0.8rem" }}>Celebrate the adopters making the biggest impact.</h1>
+        <p style={{ color: "var(--muted)", margin: "0.9rem auto 0", maxWidth: 620, lineHeight: 1.7 }}>
+          Points now unlock reward tiers, giving active adopters visible recognition and clear milestones to keep participating.
         </p>
       </div>
 
-      {loading ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="card-white" style={{ height: 64, animation: "pulse 1.5s ease-in-out infinite" }} />
+      {error ? (
+        <div className="card-white" style={{ padding: "2rem", color: "#b42318", textAlign: "center" }}>{error}</div>
+      ) : loading ? (
+        <div style={{ display: "grid", gap: 12 }}>
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div key={index} className="card-white skeleton" style={{ height: 78 }} />
           ))}
         </div>
       ) : (
         <>
-          {/* Podium */}
           {top3.length > 0 && (
-            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center",
-              gap: "1rem", marginBottom: "2.5rem" }}>
-              {/* 2nd */}
-              {top3[1] && (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flex: 1 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%",
-                    background: avatarColors[1],
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "white", fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.1rem" }}>
-                    {top3[1].name[0]}
-                  </div>
-                  <div style={{ textAlign: "center" }}>
-                    <p style={{ fontWeight: 700, fontSize: "0.82rem", fontFamily: "var(--font-body)" }}>{top3[1].name.split(" ")[0]}</p>
-                    <p style={{ fontSize: "0.7rem", color: "var(--muted)", fontFamily: "var(--font-body)" }}>{top3[1].points} pts</p>
-                  </div>
-                  <div style={{ background: "#d1d5db", width: "100%", height: 70, borderRadius: "10px 10px 0 0",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "var(--font-display)", fontSize: "1.5rem", fontWeight: 900, color: "white" }}>2</div>
-                </div>
-              )}
-              {/* 1st */}
-              {top3[0] && (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flex: 1 }}>
-                  <span style={{ fontSize: "1.5rem" }}>👑</span>
-                  <div style={{ width: 52, height: 52, borderRadius: "50%",
-                    background: avatarColors[0],
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "white", fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.3rem",
-                    boxShadow: "0 0 0 3px white, 0 0 0 5px var(--gold)" }}>
-                    {top3[0].name[0]}
-                  </div>
-                  <div style={{ textAlign: "center" }}>
-                    <p style={{ fontWeight: 700, fontSize: "0.88rem", fontFamily: "var(--font-body)" }}>{top3[0].name.split(" ")[0]}</p>
-                    <p style={{ fontSize: "0.72rem", color: "var(--accent)", fontWeight: 700, fontFamily: "var(--font-body)" }}>{top3[0].points} pts</p>
-                  </div>
-                  <div style={{ background: "var(--gold)", width: "100%", height: 100, borderRadius: "10px 10px 0 0",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "var(--font-display)", fontSize: "2rem", fontWeight: 900, color: "white",
-                    boxShadow: "0 8px 24px rgba(212,168,67,0.35)" }}>1</div>
-                </div>
-              )}
-              {/* 3rd */}
-              {top3[2] && (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flex: 1 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%",
-                    background: avatarColors[2],
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "white", fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.1rem" }}>
-                    {top3[2].name[0]}
-                  </div>
-                  <div style={{ textAlign: "center" }}>
-                    <p style={{ fontWeight: 700, fontSize: "0.82rem", fontFamily: "var(--font-body)" }}>{top3[2].name.split(" ")[0]}</p>
-                    <p style={{ fontSize: "0.7rem", color: "var(--muted)", fontFamily: "var(--font-body)" }}>{top3[2].points} pts</p>
-                  </div>
-                  <div style={{ background: "#b45309", width: "100%", height: 50, borderRadius: "10px 10px 0 0",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "var(--font-display)", fontSize: "1.5rem", fontWeight: 900, color: "white" }}>3</div>
-                </div>
-              )}
+            <div className="responsive-grid" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))", alignItems: "stretch", marginBottom: "1.5rem" }}>
+              {top3.map((entry, index) => {
+                const icons = [Crown, Medal, Award];
+                const Icon = icons[index];
+                return (
+                  <article key={entry.id} className="card-white interactive-card" style={{ padding: "1.35rem", textAlign: "center", borderColor: index === 0 ? "rgba(201,149,47,0.38)" : "var(--border)" }}>
+                    <div style={{ width: 58, height: 58, borderRadius: "50%", display: "grid", placeItems: "center", margin: "0 auto 0.85rem", color: "#fff", background: index === 0 ? "linear-gradient(135deg,#c9952f,#f1c96c)" : "linear-gradient(135deg,var(--accent),var(--rose))" }}>
+                      <Icon style={{ width: 28, height: 28 }} />
+                    </div>
+                    <span className="badge-soft">Rank #{entry.rank}</span>
+                    <h2 style={{ marginTop: "0.7rem", fontSize: "1.35rem", fontWeight: 900 }}>{entry.name}</h2>
+                    <p style={{ color: "var(--accent)", fontWeight: 900, marginTop: 4 }}>{entry.points} points</p>
+                    <div className="reward-badge" style={{ marginTop: "0.9rem", justifyContent: "center", color: entry.rewardTier.accent, borderColor: `${entry.rewardTier.accent}33`, background: `${entry.rewardTier.accent}14` }}>
+                      <Gift style={{ width: 14, height: 14 }} /> {entry.rewardTier.name}
+                    </div>
+                    <p style={{ color: "var(--muted)", fontSize: "0.78rem", marginTop: "0.7rem" }}>{entry.rewardTier.perk}</p>
+                  </article>
+                );
+              })}
             </div>
           )}
 
-          {/* Rest */}
-          {rest.length > 0 && (
-            <div className="card-white" style={{ overflow: "hidden", marginBottom: "2rem" }}>
-              {rest.map((entry, i) => (
-                <div key={entry.id}
-                  style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px",
-                    borderBottom: i < rest.length - 1 ? "1px solid var(--border)" : "none",
-                    transition: "background 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "var(--cream)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                  <span style={{ width: 28, textAlign: "center", fontFamily: "var(--font-display)",
-                    fontSize: "1rem", fontWeight: 800, color: "var(--muted)" }}>{entry.rank}</span>
-                  <div style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                    background: avatarColors[i % avatarColors.length],
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "white", fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "0.9rem" }}>
-                    {entry.name[0]}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontWeight: 700, fontSize: "0.85rem", fontFamily: "var(--font-body)" }}>{entry.name}</p>
-                    {entry.adoptionsApproved > 0 && (
-                      <p style={{ fontSize: "0.68rem", color: "var(--muted)", fontFamily: "var(--font-body)" }}>
-                        🏡 {entry.adoptionsApproved} adoption{entry.adoptionsApproved !== 1 ? "s" : ""}
-                      </p>
-                    )}
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <p style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.1rem", color: "var(--accent)" }}>
-                      {entry.points}
-                    </p>
-                    <p style={{ fontSize: "0.62rem", color: "var(--muted)", fontFamily: "var(--font-body)" }}>points</p>
-                  </div>
+          <div className="two-col" style={{ gridTemplateColumns: "1.35fr 0.85fr", alignItems: "start" }}>
+            <section className="card-white" style={{ overflow: "hidden" }}>
+              {leaders.length === 0 ? (
+                <div style={{ padding: "3rem 1.5rem", textAlign: "center" }}>
+                  <Sparkles style={{ width: 42, height: 42, color: "var(--accent)", margin: "0 auto 1rem" }} />
+                  <h2 style={{ fontSize: "1.4rem", fontWeight: 900 }}>No ranking yet</h2>
+                  <p style={{ color: "var(--muted)", marginTop: 8 }}>Adopters will appear here once they earn points.</p>
                 </div>
-              ))}
-            </div>
-          )}
+              ) : (
+                leaders.map((entry, index) => (
+                  <div
+                    key={entry.id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "42px 1fr auto",
+                      gap: 14,
+                      alignItems: "center",
+                      padding: "1rem 1.15rem",
+                      borderBottom: index < leaders.length - 1 ? "1px solid var(--border)" : "none",
+                    }}
+                  >
+                    <span style={{ width: 38, height: 38, borderRadius: 14, background: "var(--cream)", display: "grid", placeItems: "center", fontWeight: 900, color: "var(--muted)" }}>
+                      {entry.rank}
+                    </span>
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontWeight: 900, color: "var(--ink)" }}>{entry.name}</p>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 6 }}>
+                        <span className="reward-badge" style={{ color: entry.rewardTier.accent, borderColor: `${entry.rewardTier.accent}33`, background: `${entry.rewardTier.accent}14` }}>
+                          {entry.rewardTier.name}
+                        </span>
+                        {entry.adoptionsApproved > 0 && <span className="badge-soft">{entry.adoptionsApproved} approved</span>}
+                      </div>
+                      {entry.nextReward.tier && (
+                        <div style={{ marginTop: 10 }}>
+                          <div style={{ height: 7, borderRadius: 999, background: "var(--cream)", overflow: "hidden" }}>
+                            <div style={{ width: `${entry.nextReward.progress}%`, height: "100%", borderRadius: 999, background: entry.rewardTier.accent }} />
+                          </div>
+                          <p style={{ color: "var(--muted)", fontSize: "0.72rem", marginTop: 5 }}>
+                            {entry.nextReward.pointsNeeded} points to {entry.nextReward.tier.name}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <strong style={{ display: "block", fontFamily: "var(--font-display)", fontSize: "1.35rem", color: "var(--accent)" }}>{entry.points}</strong>
+                      <span style={{ color: "var(--muted)", fontSize: "0.72rem" }}>points</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </section>
 
-          {/* Points info */}
-          <div className="card-cream" style={{ padding: "1.5rem" }}>
-            <p style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "0.95rem",
-              marginBottom: "1rem", letterSpacing: "-0.02em" }}>How to earn points</p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              {[
-                ["Complete profile",    "+50"],
-                ["First request",       "+100"],
-                ["Get approved",        "+200"],
-                ["Daily visit",         "+5"],
-                ["Save a favorite",     "+10"],
-                ["Leave a review",      "+25"],
-              ].map(([label, pts]) => (
-                <div key={label} style={{ display: "flex", justifyContent: "space-between",
-                  padding: "8px 12px", background: "white", borderRadius: 10 }}>
-                  <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontFamily: "var(--font-body)" }}>{label}</span>
-                  <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--accent)", fontFamily: "var(--font-body)" }}>{pts}</span>
-                </div>
-              ))}
-            </div>
+            <aside className="card-cream" style={{ padding: "1.25rem", position: "sticky", top: 88 }}>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: 900, marginBottom: "0.35rem" }}>Reward guide</h2>
+              <p style={{ color: "var(--muted)", fontSize: "0.86rem", lineHeight: 1.6, marginBottom: "1rem" }}>
+                Earn points through helpful adoption actions and climb into higher reward tiers.
+              </p>
+              <div style={{ display: "grid", gap: 8 }}>
+                {pointsGuide.map(([label, points]) => (
+                  <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "0.75rem 0.85rem", borderRadius: 14, background: "rgba(255,255,255,0.72)", border: "1px solid var(--border)" }}>
+                    <span style={{ color: "var(--muted)", fontSize: "0.84rem" }}>{label}</span>
+                    <strong style={{ color: "var(--accent)", fontSize: "0.84rem" }}>{points}</strong>
+                  </div>
+                ))}
+              </div>
+            </aside>
           </div>
         </>
       )}

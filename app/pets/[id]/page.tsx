@@ -7,6 +7,7 @@ import Image from "next/image";
 import { ArrowLeft, Edit, Trash2, Heart, Check, MapPin, Scale, Calendar } from "lucide-react";
 import { Pet } from "@/types";
 import { PetReviews } from "@/components/PetReviews";
+import { useToast } from "@/components/ToastProvider";
 
 const PET_EMOJI: Record<string, string> = { Dog:"🐶", Cat:"🐱", Rabbit:"🐰", Bird:"🐦", Hamster:"🐹" };
 const STATUS_CFG: Record<string, { label: string; bg: string; color: string }> = {
@@ -18,6 +19,7 @@ const STATUS_CFG: Record<string, { label: string; bg: string; color: string }> =
 export default function PetDetailPage() {
   const { id }            = useParams<{ id: string }>();
   const { data: session } = useSession();
+  const { showToast } = useToast();
   const router            = useRouter();
   const user              = session?.user as any;
   const isAdmin           = user?.role === "ADMIN" || user?.role === "MODERATOR";
@@ -46,7 +48,10 @@ export default function PetDetailPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       setRequested(true); setShowForm(false);
-    } catch (err: any) { alert(err.message); } finally { setRequesting(false); }
+      showToast({ title: "Request submitted", message: "Your adoption request is ready for review.", tone: "success" });
+    } catch (err: any) {
+      showToast({ title: "Could not submit request", message: err.message, tone: "error" });
+    } finally { setRequesting(false); }
   }
 
   async function handleDelete() {
@@ -60,16 +65,21 @@ export default function PetDetailPage() {
     if (!session) return;
     setFavLoading(true);
     const method = favorited ? "DELETE" : "POST";
-    await fetch(`/api/favorites/${id}`, { method });
-    setFavorited(!favorited);
+    const res = await fetch(`/api/favorites/${id}`, { method });
+    if (res.ok) {
+      setFavorited(!favorited);
+      showToast({ title: favorited ? "Removed from favorites" : "Saved to favorites", tone: "success" });
+    } else {
+      showToast({ title: "Could not update favorite", message: "Please try again.", tone: "error" });
+    }
     setFavLoading(false);
   }
 
   const label: React.CSSProperties = { display: "block", fontSize: "0.72rem", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "var(--font-body)", color: "var(--ink)" };
 
   if (loading) return (
-    <div style={{ maxWidth: 960, margin: "0 auto", padding: "3rem 2rem" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", marginTop: "2rem" }}>
+    <div className="page-shell" style={{ maxWidth: 960 }}>
+      <div className="two-col" style={{ marginTop: "2rem" }}>
         <div style={{ height: 380, background: "var(--cream)", borderRadius: 20 }} className="pulse-bg" />
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {[200,140,80,180].map(w => <div key={w} style={{ height: 16, background: "var(--cream)", borderRadius: 8, width: w }} className="pulse-bg" />)}
@@ -91,14 +101,14 @@ export default function PetDetailPage() {
   const canAdopt  = pet.status === "AVAILABLE" && !!session && !isAdmin;
 
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto", padding: "2.5rem 2rem 5rem" }}>
+    <div className="page-shell" style={{ maxWidth: 960 }}>
       <Link href="/pets" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.82rem", color: "var(--muted)", textDecoration: "none", marginBottom: "2rem", fontFamily: "var(--font-body)", fontWeight: 600 }}
         onMouseEnter={e => (e.currentTarget.style.color = "var(--ink)")}
         onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}>
         <ArrowLeft style={{ width: 15, height: 15 }} /> Back to pets
       </Link>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem" }}>
+      <div className="two-col">
         {/* Photos */}
         <div>
           <div style={{ height: 380, borderRadius: 20, overflow: "hidden", position: "relative", background: "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8rem" }}>

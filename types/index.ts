@@ -17,6 +17,7 @@ export interface User {
   email: string;
   role: Role;
   points: number;
+  rewardTier?: string;
   avatarUrl?: string | null;
   bio?: string | null;
   phone?: string | null;

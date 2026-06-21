@@ -37,6 +37,12 @@ enum ActivityType {
   REVIEW_LEFT
 }
 
+enum QueueStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String
@@ -44,6 +50,7 @@ model User {
   passwordHash  String    @map("password_hash")
   role          Role      @default(ADOPTER)
   points        Int       @default(0)
+  rewardTier    String    @default("new-friend") @map("reward_tier")
   avatarUrl     String?   @map("avatar_url")
   bio           String?
   phone         String?
@@ -58,6 +65,8 @@ model User {
   reviews          Review[]
   shelterPets      Pet[]             @relation("ShelterStaff")
   notifications    Notification[]
+  securityLogs     SecurityLog[]
+  pointsQueue      PointsQueue[]
 
   @@map("users")
 }
@@ -144,6 +153,35 @@ model ActivityLog {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("activity_logs")
+}
+
+model SecurityLog {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  activityType String   @map("activity_type")
+  reason       String
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("security_logs")
+}
+
+model PointsQueue {
+  id           String      @id @default(cuid())
+  userId       String      @map("user_id")
+  activityType String      @map("activity_type")
+  points       Int
+  metadata     Json?
+  status       QueueStatus @default(PENDING)
+  attempts     Int         @default(0)
+  createdAt    DateTime    @default(now()) @map("created_at")
+  processedAt  DateTime?   @map("processed_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("points_queue")
 }
 
 model Favorite {
